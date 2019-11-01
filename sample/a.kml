@@ -1,0 +1,17 @@
+// https://www.slideshare.net/liferobotics/ss-75010238
+// p.23 of 42.
+
+transition deletePoint
+	when length points != 0 @[- 点のリストが空でないとき -]
+	-->
+{
+	post {
+		target points, index;
+		points' = [ points # i |
+			i : Int & 0 <= i && i < length points && i != index ];
+		index' = if index + 1 = length points then max(index – 1, 0) else index;
+	}@{-
+		事後の点のリストは、事前の点のリストからindex番目を除いたもの
+		インデックスは末尾を指していた場合は1つ小さい値と0の最大値、そうでなければ変わらない
+	-}
+}

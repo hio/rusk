@@ -1,0 +1,23 @@
+event greet@(do greeting);
+
+state Greeting@(greeting)
+{
+	var greeted: Boolean = false;
+	transition greet
+		when greeted == false @[- not yet -]
+		-->
+	{
+		post {
+			target greeted;
+			greeted' = true;
+			state' = Bye;
+		}@{-
+			Hello!
+		-}
+	}
+}
+
+state Bye@(bye!)
+{
+	// ...
+}

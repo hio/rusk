@@ -1,0 +1,60 @@
+// https://tech.nikkeibp.co.jp/dm/atcl/mag/15/00140/00017/?P=2
+// 《日経Robo》ファナックが買収したロボベンチャー、ソフトの技術力で群を抜く
+// 仕様を厳密に記述する「形式手法」を実践、約2万行を記述
+
+event addPoint@(add a point),
+	deletePoint@(delete the point),
+	move@(move the arm),
+	;
+
+
+// 例)  ロボットの移動点の編集状態の状態遷移
+state Edit@(移動点の編集状態) {
+	var points : Point List = [];
+	var index : Int = 0;
+
+	invariant { // この状態で成り立つ不変条件
+		(length points /= 0) => (0 <= index && index < length points);
+	}@{
+		点のリストが空でなければ、インデックスは0以上、
+		かつ、点のリスト長より小さい
+	}
+
+	transition addPoint(p : Point)
+			when length points < 10
+				@[- 点のリストが10未満のとき -] --> {
+		post {
+			target points;
+			points' = XXX;//points ^ [p];
+		}@{-
+			事後の点のリストは、事前の点のリストの末尾に
+			点pを追加したもの
+		-}
+	}
+
+	transition deletePoint
+			when length points /= 0 @[- 点のリストが空でないとき -] --> {
+		post {
+			target points, index;
+
+			points' = XXX;//[points # i| i: Int & 0 <= i && i < length points && i /= index ];
+			index' = XXX;//if index + 1 = length points then index - 1 else index;
+		}@{-
+			事後の点のリストは, 事前の点のリストから index 番目を除いたもの.
+			インデックスは末尾を刺していた場合は 1 つ小さい値, そうでなければ変わらない.
+		-}
+	}
+
+	transition move
+			when length points /= 0
+				@[- 点のリストが空でないとき -] --> {
+		post {
+			state' = Moving points;
+		}@{- 移動状態へ遷移する -}
+	}
+}
+
+//XXX:state Moving@(再生状態)(ps : Point List) {
+state Moving@(再生状態){
+	//...
+}

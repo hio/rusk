@@ -1,0 +1,30 @@
+h2
+{
+	border-bottom: #7f7f7f 2px solid;
+	border-left: #7f7f7f 4px solid;
+	padding-left: 2px;
+}
+
+h3
+{
+	border-bottom: #7f7f7f 1px solid;
+	border-left: #7f7f7f 2px solid;
+	padding-left: 2px;
+}
+
+table
+{
+	border-collapse: collapse;
+}
+
+th
+{
+	background-color: #ddd;
+}
+
+td, th
+{
+	border: solid 1px gray;
+	padding-left: 2px;
+	padding-right: 2px;
+}
