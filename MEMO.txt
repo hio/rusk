@@ -1,0 +1,72 @@
+---
+title: MEMO
+---
+
+- https://ja.wikipedia.org/wiki/論理記号の一覧 =>
+- 仕様記述上は、副作用は絶対ダメなので、0引数関数と定数は区別できないほうがむしろ好ましいかも（モデル検査や定理証明ができなくなる）
+
+HTML:
+https://www.slideshare.net/liferobotics/ss-75010140
+  p.62 of 82.
+https://www.slideshare.net/liferobotics/corokml
+  p.11 of 14.
+
+https://github.com/minekoa/til/blob/master/formalmethod/kml/example.md
+  KML文法を思い出す
+
+集合と論理の演算は、VDM の仕様
+   つ http://research.nii.ac.jp/~f-ishikawa/vdm/files/VDM-LangReference.pdf
+   が参考になるけれど、文法が独特すぎるので Haskell に寄せたいお気持ち表明
+
+https://ja.wikipedia.org/wiki/Communicating_Sequential_Processes
+  Communicating Sequential Processes（CSP）とは、並行性に関するプロセス
+  計算の理論のひとつである。
+
+https://www.slideshare.net/liferobotics/coro-63631016
+30. 検証する ー 検証チームがいない！
+30 導入の計画と現実
+よくあるテスト
+  テストエンジニアが作成した
+  テスト項目表とテスト手順書をもとに、
+  テストチームが
+  テストを行う
+今回のテスト
+  開発者が仕様書に追記した
+  状態遷移ごとのテスト項目をもとに、
+  （学生アルバイトの）検証者または開発者が
+  テストを行う
+
+論理式を読んでもらうのはつらいだろうから
+以下の項目を自然言語で説明
+1. 検証する遷移のガード条件
+2. ガード条件を満たす手順
+3. 事後条件を確認する手順
+   (画面から明示的にわからないものだけ説明を追記)
+
+
+error[E0307]: invalid method receiver type: B
+    = note: type must be `Self` or a type that dereferences to it
+    = help: consider changing to `self`, `&self`, `&mut self`, `self: Box<Self>`, `self: Rc<Self>`, `self: Arc<Self>`, or `self: Pin<P>` (where P is one of the previous types except `Self`)
+
+$ rustc --explain E0307
+error: no extended information for E0307
+
+
+error: reached the type-length limit while instantiating `<&mut std::vec::DrainFilter<comb...}]], std::result::Result<(), !>>`
+     |
+     = note: consider adding a `#![type_length_limit="1218221"]` attribute to your crate
+
+error: aborting due to previous error
+
+
+std::mem::size_of::<String>()         ==> 24
+std::mem::size_of::<Box<String>>()    ==> 8
+
+std::mem::size_of::<Vec<u8>>()        ==> 24
+std::mem::size_of::<Vec<String>>()    ==> 24
+
+std::mem::size_of::<Option<String>>() ==> 24
+std::mem::size_of::<Option<[u8;3]>>() ==> 4
+std::mem::size_of::<usize>()          ==> 8
+std::mem::size_of::<Option<usize>>()  ==> 16
+std::mem::size_of::<Box<usize>>()     ==> 8

@@ -1,0 +1,88 @@
+// fn test_event()
+event e1;
+event e1,;
+event e1, e2;
+event e1, e2,;
+
+event e1;
+event e1|;
+event e1| e2;
+event e1| e2|;
+
+event e;
+event e@(summary);
+event e@(-summary-);
+event e(param:Type);
+event e@{-description-};
+event e@(summ)(p1:T1)(p2:T2)@{-desc-};
+
+
+// fn test_type()
+type x = {};
+type x = { f1: T1 };
+type x@(summary) = { f1: T1 };
+type x = { f1: T1 }@{-description-};
+type x@(summary) = { f1: T1 }@{-description-};
+
+type x = { f1: T1 @{- desc -}, };
+type x = { f1: T1, @// desc
+};
+
+type x = { f1: T1, };
+type x = { f1: T1, f2: T2 };
+type x = { f1: T1, f2: T2, };
+
+
+//-----junks.
+
+const x = {| a |};
+const x = |[ a ]|;
+const x = P |[ X ]| Q `next` x;
+
+const x = any;
+
+event e@{- dd
+dd
+-};
+
+
+const x = 1 ! 2 ? 3 @{- dd
+dd
+-};
+
+type x@(summary) = {
+  f1@(ff): T1 @{-ddd-}
+}@{- dd
+  dd
+-};
+
+state s{
+var x@(-xx-) = 1 @{- dd
+dd
+-};
+invariant{}@{-dd
+dd
+-}
+transition x (Just _a:a b_) (a:b) when _a == b_ --> { post{} }@{- dd
+dd
+-}
+transition y (_:b) when x @[- dd
+dd -]
+--> { post{}@{- dd
+dd
+-}
+}
+transition y (Just _:Maybe _) --> { post{} }
+}
+
+event e@(summary);
+event e@(-summary-);
+
+invariant { x; }
+invariant { x => y; }
+invariant { a b && c => d (e f); }
+invariant { x; y; z; }
+invariant { _a => b_; }@{- dd
+dd
+-}
+const x = P |[ X ]| Q `next` x;

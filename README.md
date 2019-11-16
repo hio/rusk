@@ -1,12 +1,24 @@
-# Rusk: a KML dialect
+---
+title: "Rusk a Specification Language"
+---
 
 ## Usage
 
 ```
-rusk [--debug] file
+rusk [options] file.rsk
 ```
 
-read the file and generate a markdown document.
+read the file and output a markdown document.
+
+### Command Line Options
+
+* ``-V, --version``    -- show version.
+* ``-h, --help``       -- show usage.
+* ``--markdown``       -- generate markdown document. (default)
+* ``--json``           -- generate json text.
+* ``--json-pretty``    -- generate pretty json text.
+* ``--title {title}``  -- set document title.
+
 
 ## Example
 
@@ -36,105 +48,13 @@ state Bye@(bye!)
 }
 ```
 
-## Syntax
+## Documents
 
-```
-<start> = module ;;
+* [./doc/syntax.md](./doc/syntax.md).
+* [./doc/lib.md](./doc/lib.md).
+* [./ChangeLog](./ChangeLog).
+* [./TODO.md](./TODO.md).
 
-module = event state* ;;
-
-event = "event" (event-item <sep-end-by ",">)* ";" ;;
-event-item = event-name at-summary arg-list? ;;
-event-name = <dotted-name> ;;
-
-state = "state" state-name at-summary arg-list?
-          "{" state-element* "}" ;;
-state-name = <dotted-name> ;;
-state-element = var | invariant | transition ;;
-
-var = "var" <identifier> ":" type-expr "=" expr ";" ;;
-
-invariant =
-  "invariant" "{"
-    ( (expr "=>")? expr ";")+
-  "}" at-description-invariant ;;
-
-transition =
-  "transition" event-name arg-list?
-  ("when" expr at-summary-guard)?
-  "-->" "{"
-    "post" "{"
-      ("target" (target-name <sep-end-by ",">)+ ";")?
-      (target-name "=" expr ";")+
-    "}" at-description-post-cond
-  "}" ;;
-target-name = <identifier followed by "'"> ;;
-
-
-arg-list = "(" (arg <sep-end-by ",">)+ ")" ;;
-arg = <identifier> ":" type-expr ;;
-
-at-summary = "@" "(" <free-text> ")" ;;
-at-summary-guard = "@" "[-" <free-text> "-]" ;;
-at-description-invariant = "@" "{" <free-text> "}" ;;
-at-description-post-cond = "@" "{-" <free-text> "-}" ;;
-
-line-comment = "//" <free-text except '\n'> ;;
-
-
-type-expr = expr ;;
-
-expr = expr "+" expr
-     | expr "-" expr
-     | expr "*" expr
-     | expr "/" expr
-     | expr "++" expr
-     | expr "==" expr
-     | expr "/=" expr
-     | expr "<" expr
-     | expr "<=" expr
-     | expr ">" expr
-     | expr ">=" expr
-     | expr "&&" expr
-     | expr "||" expr
-     | "(" expr ")"
-     | expr expr
-     | expr "." <identifier>
-     | term
-
-term = <identifier> | <integer> | <dq-string>
-     | case-expr
-     ;;
-
-case-expr =
-  "case" expr "{"
-  (expr ("when" expr)? "=>" expr <sep-end-by ";">)+
-  "}"
-  ;;
-
-<dq-string> = "\"" <free-text> "\"" ;;
-<dotted-name> = (<identifier> <sep-by ".">)+ ;;
-```
-
-## TODO
-
-* integrated summary text: `"@" "[" <free-text> "]"`
-* integrated description text: `"@" "{-" <free-text> "-}"`
-* list expression:  `"[" (expr <sep-end-by ",">)* "]"`
-* tuple expression:  `"(" ")" | "(" expr "," (expr <sep-end-by ",">)* ")"`
-* if expression:  `"if" expr "{" expr "}" "else" "{" expr "}"`
-<!-- (ternary expr:) `expr ? expr : expr`
-<!-- (if_else method+lambda:) `bool-expr.if_else (\-> expr) (\-> expr)` -->
-* object expression:  `expr "{" (<identifier> "=" expr ";")+ "}"`
-* object definision: `"object" "{" (object-event | var)* "}"`
-* let expression: `"let" (<identifier> "=" expr <sep-end-by ",">)+ "in" expr`
-* semantic check
-* function definision: `"fn" <identifier> arg-list "->" type-expr ...`
-* type definision: `"type" <identifier> <identifier>* "=" type-expr`
-<!-- * type check -->
-* sphinx generator
-* json generator
-* HTML henerator
 
 ## References
 
@@ -147,14 +67,5 @@ case-expr =
   https://www.slideshare.net/liferobotics/corokml
 * KML文法を思い出す
   https://github.com/minekoa/til/blob/master/formalmethod/kml/example.md
-
-## ChangeLog
-
-### Release 0.1.1 (2019-11-07)
-
-Improvement.
-Bug Fix
-
-### Release 0.1.0 (2019-11-04)
-
-Initial release.
+* kmldoc
+  https://github.com/minekoa/til/tree/master/formalmethod/kml/kmldoc

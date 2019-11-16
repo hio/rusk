@@ -15,17 +15,17 @@ state Edit@(移動点の編集状態) {
 
 	invariant { // この状態で成り立つ不変条件
 		(length points /= 0) => (0 <= index && index < length points);
-	}@{
+	}@{-
 		点のリストが空でなければ、インデックスは0以上、
 		かつ、点のリスト長より小さい
-	}
+	-}
 
 	transition addPoint(p : Point)
 			when length points < 10
 				@[- 点のリストが10未満のとき -] --> {
 		post {
 			target points;
-			points' = XXX;//points ^ [p];
+			points' = points ++ [p];
 		}@{-
 			事後の点のリストは、事前の点のリストの末尾に
 			点pを追加したもの
@@ -38,7 +38,7 @@ state Edit@(移動点の編集状態) {
 			target points, index;
 
 			points' = XXX;//[points # i| i: Int & 0 <= i && i < length points && i /= index ];
-			index' = XXX;//if index + 1 = length points then index - 1 else index;
+			index' = if index + 1 == length points { index - 1 } else { index };
 		}@{-
 			事後の点のリストは, 事前の点のリストから index 番目を除いたもの.
 			インデックスは末尾を刺していた場合は 1 つ小さい値, そうでなければ変わらない.
@@ -54,7 +54,6 @@ state Edit@(移動点の編集状態) {
 	}
 }
 
-//XXX:state Moving@(再生状態)(ps : Point List) {
-state Moving@(再生状態){
+state Moving@(再生状態)(ps : Point List) {
 	//...
 }

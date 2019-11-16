@@ -1,0 +1,64 @@
+---
+title: ChangeLog
+---
+
+## Release 0.1.9 (2019-11-27)
+
+* parser
+
+	* support __set pragma.
+
+## Release 0.1.8 (2019-11-26)
+
+* parser
+
+	* support type t = a b.
+
+## Release 0.1.7 (2019-11-25)
+
+* parser
+
+	* fix parameter-list parser.
+	* able to target state.
+	* state description.
+	* event set only at a child of target event set or with __event_set pragma.
+
+## Release 0.1.6 (2019-11-24)
+
+* parser
+
+	* binop ":" and "in"
+	* keyword "any"
+	* channel set
+	* target event set
+
+* markdown formatter
+
+	* some escapes on formatting.
+
+## Release 0.1.5 (2019-11-21)
+
+* Update parser
+* Update markdown formatter
+
+## Release 0.1.4 (2019-11-19)
+
+* Update parser.
+
+## Release 0.1.3 (2019-11-18)
+
+* Update parser.
+
+## Release 0.1.2 (2019-11-17)
+
+* Rewrite parser.
+* Improvement: record syntaxes, list syntax and more.
+
+## Release 0.1.1 (2019-11-07)
+
+* Improvement.
+* Bug Fix
+
+## Release 0.1.0 (2019-11-04)
+
+* Initial release.

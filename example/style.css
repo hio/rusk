@@ -1,3 +1,8 @@
+#TOC
+{
+	border: solid 1px silver;
+}
+
 h2
 {
 	border-bottom: #7f7f7f 2px solid;
@@ -8,7 +13,6 @@ h2
 h3
 {
 	border-bottom: #7f7f7f 1px solid;
-	border-left: #7f7f7f 2px solid;
 	padding-left: 2px;
 }
 

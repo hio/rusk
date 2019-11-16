@@ -1,0 +1,22 @@
+
+type x = a | b | c {} | {};
+type x = {f:t};
+type x = a;
+type x = {};
+type x = a {};
+
+type x = a |;
+type x = a | b;
+type x = a | b |;
+type x = a | b | c {} | {};
+
+state s
+{
+	var a:b = 2;
+	transition x p q r (Just _) --> {post{ target state; }}
+	transition x (p:T) --> {post{}}
+}@{-
+ddd
+**ddd**
+ddd
+-}
