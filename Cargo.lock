@@ -23,7 +23,7 @@ dependencies = [
 
 [[package]]
 name = "rusk"
-version = "0.1.5"
+version = "0.1.9"
 dependencies = [
  "serde 1.0.103 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.42 (registry+https://github.com/rust-lang/crates.io-index)",

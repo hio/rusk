@@ -69,3 +69,8 @@ state Bye@(bye!)
   https://github.com/minekoa/til/blob/master/formalmethod/kml/example.md
 * kmldoc
   https://github.com/minekoa/til/tree/master/formalmethod/kml/kmldoc
+
+
+## License
+
+MIT OR Apache-2.0
