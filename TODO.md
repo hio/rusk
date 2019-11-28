@@ -8,7 +8,6 @@ near future:
 
 - TD-104 [-/2 TU] tau (arg) ... guard -->
 - TD-105 [-/2 TU] fn f (arg) ...: t = body;
-- TD-121 [-/2 TU] update doc/syntax.md.
 
 lightweight:
 
@@ -68,6 +67,7 @@ blocked/blocks:
 ## DONE
 
 - (newer)
+- TD-121 [-/2 TU] update doc/syntax.md.
 - TD-151 [2/2 TU] support post { cond }.
 - TD-131 [1/1 TU] set pragma
 - TD-106 [1/1 TU] type a = b; format should be "b" rather than "b |"

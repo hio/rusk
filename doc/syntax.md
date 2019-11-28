@@ -2,8 +2,6 @@
 title: Rusk Syntax
 ---
 
-(outdated. need to be updated.)
-
 ```
 <start> ::= module ;;
 
@@ -26,17 +24,17 @@ var ::= "var" <identifier> ":" type-expr "=" expr ";" ;;
 
 invariant ::=
   "invariant" "{"
-    ( (expr "=>")? expr ";")+
-  "}" at-description ;;
+    ( cond-expr ";")+
+  "}" at-stmt-description ;;
 
 transition ::=
   "transition" event-name arg-list?
-  ("when" expr at-guard-description)?
+  ("when" cond-expr at-phrase-description)?
   "-->" "{"
     "post" "{"
       ("target" (target-name <sep-end-by ",">)+ ";")?
-      (expr \<sep-end-by ";"\>)+
-    "}" at-description
+      (cond-expr \<sep-end-by ";"\>)+
+    "}" at-stmt-description
   "}" ;;
 target-name ::= <identifier followed by "'"> ;;
 
@@ -47,22 +45,26 @@ arg ::= <identifier> ":" type-expr ;;
 at-alias ::= "@" "(" <free-text> ")"
            | "@" "(-" <free-text> "-)"
          ;;
-at-guard-description ::= "@" "[-" <free-text> "-]" ;;
-at-description ::= "@" "{-" <free-text> "-}" ;;
+at-phrase-description ::= "@" "[-" <free-text> "-]" ;;
+at-stmt-description ::= "@" "{-" <free-text> "-}" ;;
 
 
-type-expr ::= <<expr>> ;;
+cond-expr ::= <expr> ;;
+type-expr ::= <expr> ;;
 
 case-expr ::=
   "case" <expr exclude record syntax> "{"
-  (expr ("when" expr)? "=>" expr <sep-end-by ";">)+
+  (expr ("when" cond-expr)? "=>" expr <sep-end-by ";">)+
   "}"
   ;;
 
 if-expr ::=
-  "if" <expr excludes record syntax>  "{" expr "}"
+  "if" <cond-expr excludes record syntax>  "{" expr "}"
   ("else" "{" expr "}")?
   ;;
+
+let-expr ::=
+  "let" (<identifier> "=" <expr exclude "in" binary operator> <sep-end-by ",">)+ "in" expr ;;
 
 <dq-string> ::= "\"" <free-text> "\"" ;;
 <dotted-name> ::= (<identifier> <sep-by ".">)+ ;;
@@ -82,21 +84,21 @@ if-expr ::=
     * target event set: "|[" expr "]|"
     * compound expr \
         * \<case-expr\>
-        * let expr
+        * \<let expr\>
         * \<if-expr\>
         * record mutation with inside syntax: "{" expr "|" \<idenfifier\> "<-" expr "," ... "}"
-        * quantifier expr: ("exists" | "exists1" | "forall") (expr \<sep-end-by ","\>)+ "|" expr
+        * quantifier expr: ("exists" | "exists1" | "forall") (expr \<sep-end-by ","\>)+ "|" cond-expr
     * any keyword
     * given keyword
     * state keyword
 2. [quasi-term] property
     * left assoc: expr "." expr
-3. [quasi-term] index
+3. [quasi-term] index (get nth element)
     * left assoc: expr "!!" expr
 4. [quasi-term] record construction
     * no assoc: expr "{" \<idenfifier\> "=" expr "," ... "}"
 5. [quasi-term] as-a
-    * left assoc: expr ":" expr
+    * left assoc: expr ":" type-expr
 6. application
     * left assoc: expr expr
 7. user defined binary operator
@@ -127,11 +129,11 @@ if-expr ::=
     * event ::= expr;;
     * process ::= expr;;
 13. material conditional
-    * left assoc: expr "=>" expr
+    * left assoc: cond-expr "=>" cond-expr
 14. logical conjunction
-    * left assoc: expr "&&" expr
+    * left assoc: cond-expr "&&" cond-expr
 15. logical disjunction
-    * left assoc: expr "||" expr
+    * left assoc: cond-expr "||" cond-expr
 16. pipe (lowest precedence)
     * left assoc: expr "|>" expr
     * f a |> g b == g b (f a)
@@ -143,13 +145,13 @@ if-expr ::=
 	* "[" (expr \<sep-end-by ","\>)\* "]"
 
 * list comprehension from collection:
-	* "[" expr "|" expr "in" collection "&" ... "]"
-	* TODO: "[" expr "|" expr "<-" collection "," ... "]"
+	* "[" expr "|" expr "in" collection "," ... "&" cond-expr "," ... "]"
+	* TODO: "[" expr "|" expr "<-" collection "," ... "&" cond-expr "," ... "]"
 	* collection ::= expr;;
 
 * list comprehension from type:
-	* "[" expr "|" expr ":" type "&" ... "]"
-	* type ::= expr;;
+	* "[" expr "|" expr ":" type-expr "," ... "&" cond-expr ... "]"
+	* type-expr ::= expr;;
 
 
 * set literal

@@ -72,6 +72,12 @@ Same as ``List Char``.
 
 ## type List a
 
+### (list !! index): Maybe a
+
+get the n-th element.
+
+### list.contains a: bool
+
 ### list.head: Maybe a
 
 ### list.is\_empty: Bool
