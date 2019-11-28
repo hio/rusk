@@ -31,7 +31,7 @@ send-bin:
 .PHONY: doc
 doc: cargo-doc doc-html
 cargo-doc:
-	$(CARGO) doc $(ARGS)
+	$(CARGO) doc --no-deps $(ARGS)
 
 modules ?= example hello t0 test
 
@@ -82,7 +82,7 @@ $(DOC_FILES:%.md=_build/%.md): _build/%.md: %.md | _build
 	mv $@.tmp $@
 
 serve:
-	$(HTTP_SERVE) _build $(PORT)
+	$(HTTP_SERVE) . $(PORT)
 
 $(modules:%=html-%): html-%: _build/%.rsk _build/%.log _build/%.md _build/%.html
 
