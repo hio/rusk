@@ -6,14 +6,14 @@ title: TODO
 
 near future:
 
-- TD-131 [1/1 TU] set pragma
-- TD-149 [-/1 TU] given pragma/keywod
+- TD-151 [-/2 TU] support post { cond }.
 - TD-104 [-/2 TU] tau (arg) ... guard -->
 - TD-105 [-/2 TU] fn f (arg) ...: t = body;
 - TD-121 [-/2 TU] update doc/syntax.md.
 
 lightweight:
 
+- TD-149 [-/1 TU] given pragma/keywod
 - TD-103 [-/1 TU] module description.
 - TD-126 [-/- TU] allow single paren in @(- -)
 - RF-122 [-/- TU] drop escapes by (( ))
@@ -53,7 +53,6 @@ in someday:
 - TD-147 [-/- TU] try combine again without impl type.
 - TD-148 [-/- TU] phrase description as a lowest prec expr.
 - TD-150 [-/- TU] impl [x | elem <- collection].
-- TD-151 [-/- TU] support post { cond }.
 - TD-152 [-/- TU] 
 
 blocked/blocks:
@@ -70,6 +69,7 @@ blocked/blocks:
 ## DONE
 
 - (newer)
+- TD-131 [1/1 TU] set pragma
 - TD-106 [1/1 TU] type a = b; format should be "b" rather than "b |"
 - TD-102 [4/1 TU] type t = a b
 - TD-101 [0/1 TU] type t a
