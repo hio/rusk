@@ -461,6 +461,18 @@ fn test_state_transition()
 	test_parse("state s{ transition a --> { post{ target a, b,; } } }");
 	test_parse("state s{ transition a --> { post{ target a; target b; } } }");
 
+	test_parse("state s{ transition a --> { post{ a' == a } } }");
+	test_parse("state s{ transition a --> { post{ a' == a; } } }");
+	test_parse("state s{ transition a --> { post{ a' == a; b' == b } } }");
+	test_parse("state s{ transition a --> { post{ a' == a; b' == b; } } }");
+	test_parse("state s{ transition a --> { post{ state' == state } } }");
+	test_parse("state s{ transition a --> { post{ state' == state; } } }");
+	test_parse("state s{ transition a --> { post{ a' == a; state' == state } } }");
+	test_parse("state s{ transition a --> { post{ a' == a; state' == state; } } }");
+	test_parse("state s{ transition a --> { post{ state' == state; a' == a } } }");
+	test_parse("state s{ transition a --> { post{ state' == state; a' == a; } } }");
+
+	// compat.
 	test_parse("state s{ transition a --> { post{ a' = a } } }");
 	test_parse("state s{ transition a --> { post{ a' = a; } } }");
 	test_parse("state s{ transition a --> { post{ a' = a; b' = b } } }");
@@ -1356,15 +1368,31 @@ impl Parser
 				Err(err2) => return Err(err.merge(err2)),
 			};
 
-			self.punct_equal()?;
-			let e2 = self.expr()?;
-			exprs.push(ast::Mutation::new_boxed(e1, None, Box::new("=".into()), e2));
+			let err = match self.punct_equal()
+			{
+				Ok(()) => {
+					let e2 = self.expr()?;
+					exprs.push(ast::PostCondItem::new_mutation_boxed(ast::Mutation::new_boxed(e1, None, Box::new("=".into()), e2)));
+					None
+				},
+				Err(err) => {
+					exprs.push(ast::PostCondItem::new_expr_boxed(e1));
+					Some(err)
+				}
+			};
+
 			match self.punct_semi_colon()
 			{
 				Ok(()) => (),
-				Err(err) => match self.punct_brace_right() {
+				Err(err2) => match self.punct_brace_right() {
 					Ok(()) => break,
-					Err(err2) => return Err(err.merge(err2)),
+					Err(err3) => {
+						let err = match err {
+							Some(err) => err.merge(err2),
+							None => err2,
+						};
+						return Err(err.merge(err3))
+					}
 				},
 			}
 		}

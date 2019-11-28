@@ -35,7 +35,7 @@ transition ::=
   "-->" "{"
     "post" "{"
       ("target" (target-name <sep-end-by ",">)+ ";")?
-      (target-name "=" expr ";")+
+      (expr \<sep-end-by ";"\>)+
     "}" at-description
   "}" ;;
 target-name ::= <identifier followed by "'"> ;;

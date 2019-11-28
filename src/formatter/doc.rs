@@ -744,6 +744,42 @@ impl ToDocWithIndex for ast::VarStmt
 	}
 }
 
+impl ToDoc for ast::PostCondItem
+{
+	fn to_doc(&self) -> Doc
+	{
+		match self
+		{
+			ast::PostCondItem::Mutation(m) => m.to_doc(),
+			ast::PostCondItem::Expr(expr) => expr.to_doc(),
+		}
+	}
+}
+
+impl IsTransition for ast::PostCondItem
+{
+	fn is_transition(&self) -> bool
+	{
+		match self
+		{
+			ast::PostCondItem::Mutation(m) => m.is_transition(),
+			ast::PostCondItem::Expr(expr) => {
+				match expr.as_ref()
+				{
+					ast::Expr::Cmp(cmp) => {
+						cmp.op() == "==" && match &cmp.lhs() {
+							ast::Expr::Name(name) => name.name() == "state'",
+							_ => false,
+						}
+					},
+					_ =>
+						false,
+				}
+			},
+		}
+	}
+}
+
 impl IsTransition for ast::Mutation
 {
 	fn is_transition(&self) -> bool
