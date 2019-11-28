@@ -1,4 +1,4 @@
-//! Rusk: a KML dialect
+//! Rusk: a Specification Language
 pub mod ast;
 pub mod formatter
 {
