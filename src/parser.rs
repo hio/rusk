@@ -2637,7 +2637,6 @@ impl Parser
 
 	fn set(&mut self) -> Result<Box<ast::Expr>, Box<Error>>
 	{
-		println!("XXX: set? {} {:?}", self.pos, self.tokens.get(self.pos));
 		self.keyword_set_pragma()?;
 		self.punct_brace_left()?;
 
