@@ -3,8 +3,6 @@ RUSK ?= $(RUSK_BIN)
 PANDOC ?= pandoc
 CARGO ?= cargo
 
-SEND_HOST?=send-host.localdomain
-
 HTTP_SERVE ?= sh -x -c 'cd $$1 && $(PYTHON3) -m http.server $$2' '(http-serve)'
 PYTHON3 ?= python3
 PORT ?= 8000
@@ -17,16 +15,6 @@ build clean run test update:
 release-bin:
 	$(CARGO) build --release
 	$(CARGO) build --release --target x86_64-unknown-linux-musl
-
-send-all: send-src send-bin
-
-send-src:
-	rsync --exclude target --exclude _build --exclude .git --exclude del --exclude '*.swp' -avz . $(SEND_HOST):rusk/
-
-send-bin:
-	cp target/x86_64-unknown-linux-musl/release/rusk target/x86_64-unknown-linux-musl/release/rusk.static
-	ls -l --si target/release/rusk target/x86_64-unknown-linux-musl/release/rusk.static
-	rsync -v target/release/rusk target/x86_64-unknown-linux-musl/release/rusk.static $(SEND_HOST):rusk/
 
 .PHONY: doc
 doc: cargo-doc doc-html
