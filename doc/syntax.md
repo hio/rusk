@@ -78,7 +78,7 @@ let-expr ::=
     * number
     * string: \<dq-string\>
     * paren: "(" expr ")"
-    * list literal: "[" ... "]"
+    * list literal: "\[" ... "]"
     * set literal: "__set" "{" ... "}"
     * channel set: "{|" expr "|}"
     * target event set: "|[" expr "]|"
@@ -86,7 +86,7 @@ let-expr ::=
         * \<case-expr\>
         * \<let expr\>
         * \<if-expr\>
-        * record mutation with inside syntax: "{" expr "|" \<idenfifier\> "<-" expr "," ... "}"
+        * record mutation with inside syntax: "{" expr "|" \<identifier\> "<-" expr "," ... "}"
         * quantifier expr: ("exists" | "exists1" | "forall") (expr \<sep-end-by ","\>)+ "|" cond-expr
     * any keyword
     * given keyword
@@ -96,7 +96,8 @@ let-expr ::=
 3. [quasi-term] index (get nth element)
     * left assoc: expr "!!" expr
 4. [quasi-term] record construction
-    * no assoc: expr "{" \<idenfifier\> "=" expr "," ... "}"
+    * record construction, no assoc: expr "{" \<identifier\> "=" expr "," ... "}"
+    * record mutation with outside syntax, left assoc: expr "{" \<identifier\> "<-" expr "," ... "}"
 5. [quasi-term] as-a
     * left assoc: expr ":" type-expr
 6. application
@@ -124,7 +125,7 @@ let-expr ::=
 12. communication
     * receive a messsage, no assoc: chan "?" expr
     * send a messsage, no assoc: chan "!" expr
-    * CSP prefix operation, no assoc: event "+>" process
+    * CSP prefix operation, left assoc: event "->" process
     * chan ::= expr;;
     * event ::= expr;;
     * process ::= expr;;
