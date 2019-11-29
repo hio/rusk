@@ -5,7 +5,7 @@ title: "Rusk a Specification Language"
 ## Usage
 
 ```
-rusk [options] file.rsk
+rusk [options] file.rsk > output.md
 ```
 
 read the file and output a markdown document.
