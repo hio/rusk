@@ -286,6 +286,7 @@ pub enum OperatorKind
 {
 	LogiOr,
 	LogiAnd,
+	Arrow,
 	CmpEq,
 	CmpNe,
 	CmpLt,
@@ -310,6 +311,7 @@ impl OperatorKind
 		{
 		OperatorKind::LogiOr => "||",
 		OperatorKind::LogiAnd => "&&",
+		OperatorKind::Arrow => "->",
 		OperatorKind::CmpEq => "==",
 		OperatorKind::CmpNe => "/=",
 		OperatorKind::CmpLt => "<",
@@ -891,6 +893,11 @@ impl Tokenizer
 			"-" => {
 				self.tokens.push(
 					Box::new(Token::Operator(Box::new(Operator { kind: OperatorKind::Sub, offset }))),
+				);
+			},
+			"->" => {
+				self.tokens.push(
+					Box::new(Token::Operator(Box::new(Operator { kind: OperatorKind::Arrow, offset }))),
 				);
 			},
 			"*" => {

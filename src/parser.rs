@@ -1643,7 +1643,7 @@ impl Parser
 
 	fn imply_expr(&mut self, opts: &ExprOpts) -> Result<Box<ast::Expr>, Box<Error>>
 	{
-		let mut lhs = self.cmp_expr(opts)?;
+		let mut lhs = self.comm_expr(opts)?;
 
 		if !opts.imply_op
 		{
@@ -1659,6 +1659,53 @@ impl Parser
 					match punct.kind()
 					{
 						scanner::PunctuationKind::DoubleArrow =>
+							punct.to_code().into(),
+						_ => {
+							self.restore(save);
+							return Ok(lhs)
+						},
+					}
+				},
+
+				_ => {
+					self.restore(save);
+					return Ok(lhs)
+				}
+			};
+
+			match self.comm_expr(opts)
+			{
+				Ok(rhs) => {
+					lhs = ast::Expr::new_binop_boxed(lhs, op, rhs);
+					continue
+				},
+				Err(_) => {
+					self.restore(save);
+					return Ok(lhs)
+				}
+			}
+		}
+	}
+
+
+	fn comm_expr(&mut self, opts: &ExprOpts) -> Result<Box<ast::Expr>, Box<Error>>
+	{
+		let mut lhs = self.cmp_expr(opts)?;
+
+		if !opts.imply_op
+		{
+			return Ok(lhs);
+		}
+
+		loop
+		{
+			let save = &self.save();
+
+			let op:String = match self.next_token() {
+				Some(&scanner::Token::Operator(ref punct)) => {
+					match punct.kind()
+					{
+						scanner::OperatorKind::Arrow =>
 							punct.to_code().into(),
 						_ => {
 							self.restore(save);
