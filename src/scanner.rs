@@ -127,6 +127,7 @@ pub enum Token
 	Keyword(Box<Keyword>),
 	Operator(Box<Operator>),
 	Punctuation(Box<Punctuation>),
+	PunctOper(Box<PunctOper>),
 	Number(Box<Number>),
 	TokString(Box<TokString>),
 	AtSummary(Box<TokString>),
@@ -146,6 +147,7 @@ impl HasOffset for Token
 			Token::Keyword(kw) => kw.offset,
 			Token::Operator(op) => op.offset,
 			Token::Punctuation(punct) => punct.offset,
+			Token::PunctOper(punct) => punct.offset,
 			Token::Number(number) => number.offset,
 			Token::TokString(string) => string.offset,
 			Token::AtSummary(string) => string.offset,
@@ -286,7 +288,6 @@ pub enum OperatorKind
 {
 	LogiOr,
 	LogiAnd,
-	Arrow,
 	CmpEq,
 	CmpNe,
 	CmpLt,
@@ -311,7 +312,6 @@ impl OperatorKind
 		{
 		OperatorKind::LogiOr => "||",
 		OperatorKind::LogiAnd => "&&",
-		OperatorKind::Arrow => "->",
 		OperatorKind::CmpEq => "==",
 		OperatorKind::CmpNe => "/=",
 		OperatorKind::CmpLt => "<",
@@ -379,9 +379,7 @@ pub enum PunctuationKind
 	BracketRight,
 	ChannelSetLeft,
 	ChannelSetRight,
-	Colon,
 	Comma,
-	DoubleArrow,
 	Equal,
 	LeftArrow,
 	Ampersand,
@@ -408,9 +406,7 @@ impl PunctuationKind
 			PunctuationKind::BracketRight     => "]",
 			PunctuationKind::ChannelSetLeft   => "{|",
 			PunctuationKind::ChannelSetRight  => "|}",
-			PunctuationKind::Colon            => ":",
 			PunctuationKind::Comma            => ",",
-			PunctuationKind::DoubleArrow      => "=>",
 			PunctuationKind::Equal            => "=",
 			PunctuationKind::LeftArrow        => "<-",
 			PunctuationKind::Ampersand        => "&",
@@ -421,6 +417,52 @@ impl PunctuationKind
 			PunctuationKind::TargetSetRight   => "]|",
 			PunctuationKind::TransitionArrow  => "-->",
 			PunctuationKind::VerticalBar      => "|",
+		}
+	}
+}
+
+
+#[derive(Debug)]
+pub struct PunctOper
+{
+	kind: PunctOperKind,
+	offset: Offset,
+}
+
+
+impl PunctOper
+{
+	pub fn kind(&self) -> PunctOperKind
+	{
+		self.kind
+	}
+
+
+	pub fn to_code(&self) -> &'static str
+	{
+		self.kind.to_code()
+	}
+}
+
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PunctOperKind
+{
+	Arrow,
+	Colon,
+	DoubleArrow,
+}
+
+
+impl PunctOperKind
+{
+	fn to_code(&self) -> &'static str
+	{
+		match self
+		{
+			PunctOperKind::Arrow       => "->",
+			PunctOperKind::Colon       => ":",
+			PunctOperKind::DoubleArrow => "=>",
 		}
 	}
 }
@@ -810,7 +852,7 @@ impl Tokenizer
 			},
 			":" => {
 				self.tokens.push(
-					Box::new(Token::Punctuation(Box::new(Punctuation { kind: PunctuationKind::Colon, offset }))),
+					Box::new(Token::PunctOper(Box::new(PunctOper { kind: PunctOperKind::Colon, offset }))),
 				);
 			},
 			"-->" => {
@@ -830,7 +872,7 @@ impl Tokenizer
 			},
 			"=>" => {
 				self.tokens.push(
-					Box::new(Token::Punctuation(Box::new(Punctuation { kind: PunctuationKind::DoubleArrow, offset }))),
+					Box::new(Token::PunctOper(Box::new(PunctOper { kind: PunctOperKind::DoubleArrow, offset }))),
 				);
 			},
 			"|" => {
@@ -897,7 +939,7 @@ impl Tokenizer
 			},
 			"->" => {
 				self.tokens.push(
-					Box::new(Token::Operator(Box::new(Operator { kind: OperatorKind::Arrow, offset }))),
+					Box::new(Token::PunctOper(Box::new(PunctOper { kind: PunctOperKind::Arrow, offset }))),
 				);
 			},
 			"*" => {

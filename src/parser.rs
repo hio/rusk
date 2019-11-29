@@ -657,7 +657,7 @@ impl Parser
 
 	fn punct_colon(&mut self) -> Result<(), Box<Error>>
 	{
-		if self.punct(scanner::PunctuationKind::Colon)
+		if self.punct_oper(scanner::PunctOperKind::Colon)
 		{
 			Ok(())
 		}else
@@ -705,7 +705,7 @@ impl Parser
 
 	fn punct_double_arrow(&mut self) -> Result<(), Box<Error>>
 	{
-		if self.punct(scanner::PunctuationKind::DoubleArrow)
+		if self.punct_oper(scanner::PunctOperKind::DoubleArrow)
 		{
 			Ok(())
 		}else
@@ -783,6 +783,21 @@ impl Parser
 		}else
 		{
 			Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::Ampersand(self.pos)))))
+		}
+	}
+
+
+	fn punct_oper(&mut self, kind: scanner::PunctOperKind) -> bool
+	{
+		match self.next_token()
+		{
+			Some(&scanner::Token::PunctOper(ref punct)) if punct.kind() == kind =>
+				true,
+
+			_ => {
+				self.pos -= 1;
+				false
+			},
 		}
 	}
 
@@ -1655,11 +1670,11 @@ impl Parser
 			let save = &self.save();
 
 			let op:String = match self.next_token() {
-				Some(&scanner::Token::Punctuation(ref punct)) => {
-					match punct.kind()
+				Some(&scanner::Token::PunctOper(ref punct_oper)) => {
+					match punct_oper.kind()
 					{
-						scanner::PunctuationKind::DoubleArrow =>
-							punct.to_code().into(),
+						scanner::PunctOperKind::DoubleArrow =>
+							punct_oper.to_code().into(),
 						_ => {
 							self.restore(save);
 							return Ok(lhs)
@@ -1702,11 +1717,11 @@ impl Parser
 			let save = &self.save();
 
 			let op:String = match self.next_token() {
-				Some(&scanner::Token::Operator(ref punct)) => {
-					match punct.kind()
+				Some(&scanner::Token::PunctOper(ref punct_oper)) => {
+					match punct_oper.kind()
 					{
-						scanner::OperatorKind::Arrow =>
-							punct.to_code().into(),
+						scanner::PunctOperKind::Arrow =>
+							punct_oper.to_code().into(),
 						_ => {
 							self.restore(save);
 							return Ok(lhs)
@@ -2004,11 +2019,11 @@ impl Parser
 			let save = &self.save();
 
 			let op:String = match self.next_token() {
-				Some(&scanner::Token::Punctuation(ref punct)) => {
-					match punct.kind()
+				Some(&scanner::Token::PunctOper(ref punct_oper)) => {
+					match punct_oper.kind()
 					{
-						scanner::PunctuationKind::Colon =>
-							punct.to_code().into(),
+						scanner::PunctOperKind::Colon =>
+							punct_oper.to_code().into(),
 						_ => {
 							self.restore(save);
 							return Ok(lhs)
