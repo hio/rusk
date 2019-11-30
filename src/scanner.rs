@@ -224,6 +224,7 @@ pub enum KeywordKind
 	When,
 
 	EventSetPragma,
+	MapPragma,
 	SetPragma,
 }
 
@@ -256,6 +257,7 @@ impl KeywordKind
 			KeywordKind::When       => "when",
 
 			KeywordKind::EventSetPragma => "__event_set",
+			KeywordKind::MapPragma => "__map",
 			KeywordKind::SetPragma => "__set",
 		}
 	}
@@ -392,6 +394,7 @@ pub enum PunctuationKind
 	TargetSetRight,
 	TransitionArrow,
 	VerticalBar,
+	MapsTo,
 }
 
 
@@ -419,6 +422,7 @@ impl PunctuationKind
 			PunctuationKind::TargetSetRight   => "]|",
 			PunctuationKind::TransitionArrow  => "-->",
 			PunctuationKind::VerticalBar      => "|",
+			PunctuationKind::MapsTo      => "|->",
 		}
 	}
 }
@@ -771,6 +775,7 @@ impl Tokenizer
 			"var" =>         KeywordKind::Var,
 			"when" =>        KeywordKind::When,
 			"__event_set" => KeywordKind::EventSetPragma,
+			"__map" =>       KeywordKind::MapPragma,
 			"__set" =>       KeywordKind::SetPragma,
 			_ => {
 				self.tokens.push(
@@ -886,6 +891,11 @@ impl Tokenizer
 			"|" => {
 				self.tokens.push(
 					Box::new(Token::Punctuation(Box::new(Punctuation { kind: PunctuationKind::VerticalBar, offset }))),
+				);
+			},
+			"|->" => {
+				self.tokens.push(
+					Box::new(Token::Punctuation(Box::new(Punctuation { kind: PunctuationKind::MapsTo, offset }))),
 				);
 			},
 

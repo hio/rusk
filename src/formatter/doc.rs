@@ -867,6 +867,7 @@ impl ToDoc for ast::Expr
 		ast::Expr::List(x) => x.to_doc(),
 		ast::Expr::ListComprehension(x) => x.to_doc(),
 		ast::Expr::Set(x) => x.to_doc(),
+		ast::Expr::Map(x) => x.to_doc(),
 		ast::Expr::Paren(x) => Doc::Fragment(Rc::new(vec![
 				Doc::Static("("),
 				x.to_doc(),
@@ -1108,6 +1109,41 @@ impl ToDoc for ast::SetExpr
 				Doc::Static("}"),
 			]))
 		}
+	}
+}
+
+
+impl ToDoc for ast::MapExpr
+{
+	fn to_doc(&self) -> Doc
+	{
+		if self.elems().is_empty()
+		{
+			Doc::Static("__map {}")
+		}else
+		{
+			Doc::SepBy(" ", Rc::new(vec![
+				Doc::Static("__map"),
+				Doc::Static("{"),
+				Doc::SepEndBy(", ", ",", Rc::new(
+					self.elems().iter().map(|elem| elem.to_doc()).collect::<Vec<_>>(),
+				)),
+				Doc::Static("}"),
+			]))
+		}
+	}
+}
+
+
+impl ToDoc for ast::MapItem
+{
+	fn to_doc(&self) -> Doc
+	{
+		Doc::SepBy(" ", Rc::new(vec![
+			self.key().to_doc(),
+			Doc::Static("|->"),
+			self.value().to_doc(),
+		]))
 	}
 }
 

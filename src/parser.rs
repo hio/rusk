@@ -100,6 +100,7 @@ pub enum NotFound
 	BracketRight(Offset),
 	BraceLeft(Offset),
 	VerticalBar(Offset),
+	MapsTo(Offset),
 	BraceRight(Offset),
 	ChannelSetLeft(Offset),
 	ChannelSetRight(Offset),
@@ -128,6 +129,7 @@ pub enum NotFound
 	Var(Offset),
 	When(Offset),
 	EventSetPragma(Offset),
+	MapPragma(Offset),
 	SetPragma(Offset),
 }
 
@@ -162,6 +164,7 @@ impl NotFound
 		NotFound::BracketRight(offset) => *offset,
 		NotFound::BraceLeft(offset) => *offset,
 		NotFound::VerticalBar(offset) => *offset,
+		NotFound::MapsTo(offset) => *offset,
 		NotFound::BraceRight(offset) => *offset,
 		NotFound::ChannelSetLeft(offset) => *offset,
 		NotFound::ChannelSetRight(offset) => *offset,
@@ -190,6 +193,7 @@ impl NotFound
 		NotFound::Var(offset) => *offset,
 		NotFound::When(offset) => *offset,
 		NotFound::EventSetPragma(offset) => *offset,
+		NotFound::MapPragma(offset) => *offset,
 		NotFound::SetPragma(offset) => *offset,
 		}
 	}
@@ -346,6 +350,15 @@ fn test_expr()
 	test_parse("const x = __set { 1, 2, };");
 	test_parse("const x = __set { 1, 2, 3 };");
 	test_parse("const x = __set { 1, 2, 3, };");
+
+	test_parse("const x = __map {};");
+	test_parse("const x = __map { |-> };");
+	test_parse("const x = __map { 1 |-> 2 };");
+	test_parse("const x = __map { 1 |-> 2, };");
+	test_parse("const x = __map { 1 |-> 2, 3 |-> 4 };");
+	test_parse("const x = __map { 1 |-> 2, 3 |-> 4, };");
+	test_parse("const x = __map { 1 |-> 2, 3 |-> 4, 5 |-> 6 };");
+	test_parse("const x = __map { 1 |-> 2, 3 |-> 4, 5 |-> 6, };");
 
 	test_parse("const x = let a = 1 in y;");
 	test_parse("const x = let a = 1, in y;");
@@ -616,6 +629,18 @@ impl Parser
 	}
 
 
+	fn keyword_map_pragma(&mut self) -> Result<(), Box<Error>>
+	{
+		if self.keyword(scanner::KeywordKind::MapPragma)
+		{
+			Ok(())
+		}else
+		{
+			return Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::MapPragma(self.pos)))));
+		}
+	}
+
+
 	fn punct(&mut self, kind: scanner::PunctuationKind) -> bool
 	{
 		match self.next_token()
@@ -771,6 +796,18 @@ impl Parser
 		}else
 		{
 			Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::VerticalBar(self.pos)))))
+		}
+	}
+
+
+	fn punct_maps_to(&mut self) -> Result<(), Box<Error>>
+	{
+		if self.punct(scanner::PunctuationKind::MapsTo)
+		{
+			Ok(())
+		}else
+		{
+			Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::MapsTo(self.pos)))))
 		}
 	}
 
@@ -2325,6 +2362,18 @@ impl Parser
 		};
 
 		self.restore(&save);
+		let err = match self.map_expr() {
+			result@Ok(_) => return result,
+			Err(err2) => {
+				if self.pos != save.pos
+				{
+					return Err(err2)
+				}
+				err.merge(err2)
+			},
+		};
+
+		self.restore(&save);
 		let err = match self.case_expr() {
 			result@Ok(_) => return result,
 			Err(err2) => {
@@ -2837,6 +2886,63 @@ impl Parser
 		{
 			Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::SetPragma(self.pos)))))
 		}
+	}
+
+
+	fn map_expr(&mut self) -> Result<Box<ast::Expr>, Box<Error>>
+	{
+		self.keyword_map_pragma()?;
+		self.punct_brace_left()?;
+
+		let err = match self.punct_maps_to()
+		{
+			Ok(()) => {
+				self.punct_brace_right()?;
+				return Ok(ast::Expr::new_map_boxed(Box::new(Vec::new())));
+			},
+			Err(err) => match self.punct_brace_right() {
+				Ok(()) => return Ok(ast::Expr::new_map_boxed(Box::new(Vec::new()))),
+				Err(err2) => err.merge(err2),
+			},
+		};
+
+		let first = match self.expr() {
+			Ok(key) => {
+				self.punct_maps_to()?;
+				let value = self.expr()?;
+				ast::MapItem::new_boxed(key, value)
+			},
+			Err(err2) => return Err(err.merge(err2)),
+		};
+
+		let mut elems = vec![ first, ];
+		loop
+		{
+		println!("XXX: x1: {} {:?}", self.pos, self.tokens.get(self.pos));
+			match self.punct_comma()
+			{
+				Ok(()) => (),
+				Err(err) => match self.punct_brace_right() {
+					Ok(()) => break,
+					Err(err2) => return Err(err.merge(err2)),
+				},
+			}
+
+			let err = match self.punct_brace_right() {
+				Ok(()) => break,
+				Err(err) => err,
+			};
+
+			let key = match self.expr() {
+				Ok(expr) => expr,
+				Err(err2) => return Err(err.merge(err2)),
+			};
+			self.punct_maps_to()?;
+			let value = self.expr()?;
+			elems.push(ast::MapItem::new_boxed(key, value));
+		}
+
+		Ok(ast::Expr::new_map_boxed(Box::new(elems)))
 	}
 
 

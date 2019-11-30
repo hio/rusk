@@ -825,6 +825,7 @@ pub enum Expr
 	List(Box<ListExpr>),
 	ListComprehension(Box<ListComprehensionExpr>),
 	Set(Box<SetExpr>),
+	Map(Box<MapExpr>),
 	Paren(Box<Expr>),
 	EventSet(Box<Vec<Box<Expr>>>),
 	ChannelSet(Box<Vec<Box<Expr>>>),
@@ -903,6 +904,11 @@ impl Expr
 	pub fn new_set_boxed(elems: Box<Vec<Box<Expr>>>) -> Box<Expr>
 	{
 		Box::new(Expr::Set(SetExpr::new_boxed(elems)))
+	}
+
+	pub fn new_map_boxed(elems: Box<Vec<Box<MapItem>>>) -> Box<Expr>
+	{
+		Box::new(Expr::Map(MapExpr::new_boxed(elems)))
 	}
 
 	pub fn new_paren_boxed(expr: Box<Expr>) -> Box<Expr>
@@ -1022,6 +1028,7 @@ impl Expr
 		Expr::List(_) => Prec::Term,
 		Expr::ListComprehension(_) => Prec::Term,
 		Expr::Set(_) => Prec::Term,
+		Expr::Map(_) => Prec::Term,
 		Expr::Paren(_) => Prec::Paren,
 		Expr::EventSet(_) => Prec::Paren,
 		Expr::ChannelSet(_) => Prec::Paren,
@@ -1505,6 +1512,59 @@ impl SetExpr
 	pub fn elems(&self) -> &Vec<Box<Expr>>
 	{
 		&self.elems
+	}
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MapExpr
+{
+	elems: Box<Vec<Box<MapItem>>>,
+}
+
+
+impl MapExpr
+{
+	pub fn new_boxed(elems: Box<Vec<Box<MapItem>>>) -> Box<MapExpr>
+	{
+		Box::new(MapExpr {
+			elems,
+		})
+	}
+
+	pub fn elems(&self) -> &Vec<Box<MapItem>>
+	{
+		&self.elems
+	}
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MapItem
+{
+	key: Box<Expr>,
+	value: Box<Expr>,
+}
+
+
+impl MapItem
+{
+	pub fn new_boxed(key: Box<Expr>, value: Box<Expr>) -> Box<MapItem>
+	{
+		Box::new(MapItem {
+			key,
+			value,
+		})
+	}
+
+	pub fn key(&self) -> &Expr
+	{
+		&self.key
+	}
+
+	pub fn value(&self) -> &Expr
+	{
+		&self.value
 	}
 }
 

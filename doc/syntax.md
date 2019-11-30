@@ -164,7 +164,7 @@ let-expr ::=
 	* "__set" "{" (expr \<sep-end-by ","\>)\* "}"  <!--* -->
 
 * map literal
-	* TODO: "__map" "{" (expr "|->" expr \<sep-end-by ","\>)\* "}"
+	* "__map" "{" (expr "|->" expr \<sep-end-by ","\>)\* "}"
 
 
 ## Name Resolution
