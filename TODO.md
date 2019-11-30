@@ -7,7 +7,6 @@ title: TODO
 ### Near Future
 
 - TD-129: Doc::Table
-- TD-130: text width
 - TD-150: list comprehension [x | elem <- collection] rather than [x | elem in collection].
 - TD-104: tau (arg) ... guard -\->
 
@@ -86,6 +85,7 @@ blocked/blocks:
 ## Done
 
 - (newer)
+- TD-130: text width
 - TD-158: \_\_map { k |-> v }
 - TD-159: add doc for scope (doc/syntax.md).
 - TD-160: add use statement (doc/syntax.md).

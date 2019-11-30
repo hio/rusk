@@ -23,16 +23,17 @@ impl ToRestText for Doc
 			Doc::Empty => Ok(()),
 			Doc::Heading(n, doc) => {
 				let s = doc.to_rest_text();
+				let width = text_width(&s);
 				match n
 				{
 					2 => {
-						write!(f, "{}\n", String::from("=").repeat(s.len()*2))?;
+						write!(f, "{}\n", String::from("=").repeat(width))?;
 						write!(f, "{}\n", s)?;
-						write!(f, "{}\n", String::from("=").repeat(s.len()*2))?;
+						write!(f, "{}\n", String::from("=").repeat(width))?;
 					},
 					3 => {
 						write!(f, "{}\n", s)?;
-						write!(f, "{}\n", String::from("=").repeat(s.len()*2))?;
+						write!(f, "{}\n", String::from("=").repeat(width))?;
 					},
 					_ => {
 						panic!("invalid heading level");
@@ -118,6 +119,14 @@ impl ToRestText for Doc
 		}
 	}
 }
+
+fn text_width(s: &String) -> usize
+{
+	// lazy calculation.
+	// consider UAX #11: East Asian Width.
+	s.chars().map(|c| if c < '\u{0100}' { 1 } else { 2 } ).sum()
+}
+
 
 	fn sep_end_by(f: &mut impl std::fmt::Write, sep: &Doc, end: &Doc, v: &Vec<Doc>) -> std::fmt::Result
 	{
