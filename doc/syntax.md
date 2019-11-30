@@ -36,8 +36,10 @@ transition ::=
       (cond-expr \<sep-end-by ";"\>)+
     "}" at-stmt-description
   "}" ;;
-target-name ::= <identifier followed by "'"> ;;
 
+target-name ::= <identifier> | "state" ;;
+result-name ::= <identifier followed by "'"> | "state'" ;;
+// result-name can be used at cond-expr in post-ocnd.
 
 arg-list ::= "(" (arg <sep-end-by ",">)+ ")" ;;
 arg ::= <identifier> ":" type-expr ;;
@@ -145,15 +147,44 @@ let-expr ::=
 * list literal
 	* "[" (expr \<sep-end-by ","\>)\* "]"
 
-* list comprehension from collection:
-	* "[" expr "|" expr "in" collection "," ... "&" cond-expr "," ... "]"
-	* TODO: "[" expr "|" expr "<-" collection "," ... "&" cond-expr "," ... "]"
+* list comprehension
+	* generator + filter + map.
+	* TODO: from collection: "[" expr "|" expr "<-" collection "," ... "," cond-expr "," ... "]"
+	* from collection: "[" expr "|" expr "in" collection "," ... "," cond-expr "," ... "]"
+	* from type: "[" expr "|" expr ":" type-expr "," ... "," cond-expr ... "]"
 	* collection ::= expr;;
-
-* list comprehension from type:
-	* "[" expr "|" expr ":" type-expr "," ... "&" cond-expr ... "]"
 	* type-expr ::= expr;;
 
 
 * set literal
-	* "__set" "{" (expr \<sep-end-by ","\>)\* "}"
+	* "__set" "{" (expr \<sep-end-by ","\>)\* "}"  <!--* -->
+
+* map literal
+	* TODO: "__map" "{" (expr "|->" expr \<sep-end-by ","\>)\* "}"
+
+
+## Name Resolution
+
+1. Local Objects in each brace blocks `{ ... }`.
+2. Module Level Objects.
+3. Names which are imported by `use` statement.
+3. Modules in same directory as module itself contained.
+4. Objects in prelude module in same directory as module itself contained.
+5. std Objects.
+
+## Module Sample
+
+```
+// hello.rsk
+use message { Hello };
+use message;
+fn greet (name:String) =
+	name ++ ": " ++
+	Hello ++ ", " ++ message.World ++ "!";
+```
+
+```
+// message.rsk
+const Hello = "hello"
+const World = "world";
+```

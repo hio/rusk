@@ -1,8 +1,6 @@
 ---
-titie: Standard Library
+title: Standard Library
 ---
-
-# Standard Library
 
 ## Expressions
 
@@ -12,10 +10,13 @@ Int: ``0``, ``1``, ``2``, ....
 
 String: ``"hello"``.
 
-List: ``[]``, ``[1]``, ``[1,]``, ...
-
 Identifier: ``name``, ``hello_world``, ``_``, ``_unused``, ...
 
+List: ``[]``, ``[1]``, ``[1,]``, ...
+
+Set: ``__set {}``, ``__set { 1, 2, 3, }``
+
+Map: ``__map {}``, ``__map { 1 |=> "one", 2 |=> "two", }``
 
 ### Operators
 
@@ -70,29 +71,49 @@ Unicode char string.
 Same as ``List Char``.
 
 
-## type List a
+## type Maybe A
 
-### (list !! index): Maybe a
+### Just a: Maybe A
+
+### Nothing: Maybe _
+
+### maybe.map (f:(fn (a:A): B)): Maybe B
+
+
+## type List A
+
+### (list !! (index:Int)): Maybe A
 
 get the n-th element.
 
-### list.contains a: bool
+### list.contains (a:A): bool
 
-### list.head: Maybe a
+### list.head: Maybe A
 
 ### list.is\_empty: Bool
 
 ### list.length: Int
 
-### list.map (f:(fn (a:a): b)): List b
+### list.map (f:(fn (a:A): B)): List B
 
-### list.tail: Maybe (List a)
+### list.tail: Maybe (List A)
 
+## type Set A
 
-## type Maybe a
+### (set !! (a:A)): Maybe A 
 
-### Just a: Maybe a
+### set.card: Int
 
-### Nothing: Maybe _
+cardinarity of the set.
 
-### maybe.map (f:(fn (a:a): b)): Maybe b
+## type Map K V
+
+### (map !! (k:K)): Maybe V 
+
+### map.card: Int
+
+cardinarity of the map.
+
+### map.keys: Set K
+
+### map.values: Set V
