@@ -469,6 +469,9 @@ fn test_state_transition()
 	test_parse("state s{ transition a --> { post{ target a, b; } } }");
 	test_parse("state s{ transition a --> { post{ target a, b,; } } }");
 	test_parse("state s{ transition a --> { post{ target a; target b; } } }");
+	test_parse("state s{ transition a --> { post{ target state; } } }");
+	test_parse("state s{ transition a --> { post{ target state, a; } } }");
+	test_parse("state s{ transition a --> { post{ target a, state; } } }");
 
 	test_parse("state s{ transition a --> { post{ a' == a } } }");
 	test_parse("state s{ transition a --> { post{ a' == a; } } }");
@@ -1394,7 +1397,18 @@ impl Parser
 						Err(_) => (),
 					};
 					self.restore(&save);
-					targets.push(self.name_string()?.clone());
+					match self.name_string()
+					{
+						Ok(name) => targets.push(name.clone()),
+						Err(err) => if self.keyword(scanner::KeywordKind::State)
+							{
+								targets.push("state".into())
+							}else
+							{
+								let err2 = Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::State(self.pos))));
+								return Err(err.merge(err2));
+							}
+					}
 				}
 				continue;
 			}
