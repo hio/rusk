@@ -43,8 +43,10 @@ MORE_DOC_OUTS = \
 	ChangeLog.html \
 	MEMO.html  \
 	TODO.html \
+	$(EXTRA_DOC_OUTS) \
 	$(NULL)
 
+EXTRA_DOC_OUTS ?=
 
 doc-html: $(DOC_FILES:%.md=_build/%.html) $(MORE_DOC_OUTS:%=_build/%)
 
@@ -57,10 +59,8 @@ _build/MEMO.md: MEMO.txt | _build
 _build/TODO.md: TODO.md | _build
 	cp $< $@
 
-metadata.syntax = --metadata pagetitle:'Rusk Syntax'
-
 $(DOC_FILES:%.md=_build/%.html): _build/%.html: _build/%.md
-	$(PANDOC) --toc --standalone --css `dirname $(@D) | sed -e 's,[_a-z][^/]*,..,'`/style.css --metadata source-file:$(<F) $(metadata.$(<:doc/%.md=%)) $< -o $@
+	$(PANDOC) --toc --standalone --css `dirname $(@D) | sed -e 's,[_a-z][^/]*,..,'`/style.css --metadata source-file:$(<F) $< -o $@
 
 $(DOC_FILES:%.md=_build/%.md): _build/%.md: %.md | _build
 	cp $< $@.tmp
