@@ -82,13 +82,25 @@ impl ToRestText for Doc
 			},
 
 			Doc::HeaderRow(ref v) => {
-				write!(f, ".. list-table::\n\n")?;
-				write!(f, "  *\n")?;
-				for elem in v.as_ref()
+				write!(f, ".. list-table::\n")?;
+				write!(f, "   :header-rows: 1\n")?;
+				write!(f, "\n")?;
+				let mut iter = v.iter();
+				if let Some(first) = iter.next()
 				{
-					write!(f, "    - ")?;
-					elem.encode(f)?;
+					write!(f, "  * - ")?;
+					first.encode(f)?;
 					write!(f, "\n")?;
+
+					for elem in iter
+					{
+						write!(f, "    - ")?;
+						elem.encode(f)?;
+						write!(f, "\n")?;
+					}
+				}else
+				{
+					write!(f, "  * - (no columns)\n")?;
 				}
 				write!(f, "\n")?;
 
@@ -96,12 +108,22 @@ impl ToRestText for Doc
 			},
 
 			Doc::Row(ref v) => {
-				write!(f, "  *\n")?;
-				for elem in v.as_ref()
+				let mut iter = v.iter();
+				if let Some(first) = iter.next()
 				{
-					write!(f, "   - ")?;
-					elem.encode(f)?;
+					write!(f, "  * - ")?;
+					first.encode(f)?;
 					write!(f, "\n")?;
+
+					for elem in iter
+					{
+						write!(f, "    - ")?;
+						elem.encode(f)?;
+						write!(f, "\n")?;
+					}
+				}else
+				{
+					write!(f, "  * - (no columns)\n")?;
 				}
 				write!(f, "\n")?;
 				Ok(())
