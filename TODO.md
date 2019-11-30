@@ -2,77 +2,103 @@
 title: TODO
 ---
 
-## Backlog
+## Tasks
 
-near future:
+### Near Future
 
-- TD-104 [-/2 TU] tau (arg) ... guard -->
-- TD-105 [-/2 TU] fn f (arg) ...: t = body;
+- TD-158: \_\_map { k |-> v }
+- TD-129: Doc::Table
+- TD-130: text width
+- TD-150: list comprehension [x | elem <- collection] rather than [x | elem in collection].
+- TD-104: tau (arg) ... guard -\->
 
-lightweight:
+### Misc
 
-- TD-149 [-/1 TU] given pragma/keywod
-- TD-103 [-/1 TU] module description.
-- TD-126 [-/- TU] allow single paren in @(- -)
-- RF-122 [-/- TU] drop escapes by (( ))
-- RF-115 [-/- TU] Option<Box<String>> rather than Box<Option<String>> (31)
+- RF-139: allow space chars between @ and {- -}
+- TD-149: given keyword rather than an identifier.
+- TD-103: module description.
+- TD-105: fn definition: fn f (arg) ...: t = body;
+- TD-107: when a @[- desc -], b @[- desc -, --> { ... }
+- TD-126: allow single paren in @(- -)
+- RF-122: drop escapes by (( and ))
+- TD-161: split up KwOper `in`.
+- RF-115: Option<Box<String>> rather than Box<Option<String>> (31)
 
-in someday:
+### Backlog
 
-- RF-139 [-/- TU] allow space chars between @ and {- -}
-- TD-107 [-/- TU] when { a; b; }@{- desc -}
-- TD-108 [-/- TU] library. vocabulary.
-- TD-129 [-/- TU] Doc::Table
-- TD-130 [-/- TU] text width
-- TD-136 [-/- TU] remove indentation in description.
-- TD-114 [-/- TU] nested anon record def.
-- RF-116 [-/- TU] sort scanner::KeywordKind by alphabetical
-- RF-117 [-/- TU] sort scanner::PunctuationKind by alphabetical
-- RF-118 [-/- TU] sort scanner::OperatorKind by alphabetical
-- TD-119 [-/- TU] @(((- -))) or @(--- ---)for fewer escape.
-- TD-120 [-/- TU] description for containing block. e.g. state{@{-...-}...}
-- TD-124 [-/- TU] if/then/else rather than if cond {} else {}
-- TD-125 [-/- TU] case x|arm... rather than match x{arm...}
-- TD-127 [-/- TU] unicode block, mathematical operators
-- TD-128 [-/- TU] ReST formatter
-- TD-132 [-/- TU] Doc encode option/introduce.
-- TD-133 [-/- TU] Doc encode option/no backslash escape in code.
-- TD-134 [-/- TU] Doc encode option/no line-feed in table cell.
-- TD-135 [-/- TU] Doc encode option/never twice same decoration.
-- TD-137 [-/- TU] parse markdown in description.
-- TD-138 [-/- TU] set serde attributes for json formatter.
-- TD-140 [-/- TU] tuple expression:  `"(" ")" | "(" expr "," (expr <sep-end-by ",">)* ")"`
-- TD-141 [-/- TU] ternary expr `expr ?? expr !! expr`
-- TD-142 [-/- TU] semantic check.
-- TD-143 [-/- TU] type check.
-- TD-144 [-/- TU] HTML formatter.
-- TD-145 [-/- TU] use clap cli parser.
-- TD-146 [-/- TU] use pulldown-cmark markdown parser.
-- TD-147 [-/- TU] try combine again without impl type.
-- TD-148 [-/- TU] phrase description as a lowest prec expr.
-- TD-150 [-/- TU] impl [x | elem <- collection].
-- TD-152 [-/- TU] 
+- TD-136: remove indentation in description.
+- TD-114: nested anon record def.
+- RF-116: sort scanner::KeywordKind by alphabetical
+- RF-117: sort scanner::PunctuationKind by alphabetical
+- RF-118: sort scanner::OperatorKind by alphabetical
+- TD-119: @(((- -))) or @(-\-- -\--)for fewer escape.
+- TD-120: description for containing block. e.g. state{@{-...-}...}
+- TD-124: if/then/else rather than if cond {} else {}
+- TD-125: case x|arm... rather than match x{arm...}
+- TD-127: unicode block, mathematical operators
+- TD-128: ReST formatter
+- TD-132: Doc encode option/introduce.
+- TD-133: Doc encode option/no backslash escape in code.
+- TD-134: Doc encode option/no line-feed in table cell.
+- TD-135: Doc encode option/never twice same decoration.
+- TD-137: parse markdown in description.
+- TD-138: set serde attributes for json formatter.
+- TD-140: tuple expression:  `"(" ")" | "(" expr "," (expr <sep-end-by ",">)* ")"`
+- TD-141: ternary expr `expr ?? expr !! expr`
+- TD-142: semantic check.
+- TD-143: type check.
+- TD-144: HTML formatter.
+- TD-145: use clap cli parser.
+- TD-146: use pulldown-cmark markdown parser.
+- TD-147: try combine again without impl type.
+- TD-148: phrase description as a lowest prec expr.
+- TD-152: rename summary to alias.
+- RF-153: simplify rs code { x:x, } into just { x, }
+- TD-154: binary operator for CSP sequencial composition alternative of `[]`.
 
 blocked/blocks:
 
-- TD-123 [-/- TU] alternative operator for p [] q
-- TD-109 [-/- TU] event set without pragma.
-- TD-110 [-/- TU] event item, @//, \
+- TD-123: alternative operator for p [] q
+- TD-109: event set without pragma.
+- TD-110: event item, @//, \
   (try) `sep ::= "," <@//>?`, \
   (rethink) `item }`
-- TD-111 [-/- TU] field, @//
-- TD-112 [-/- TU] type ; @//
-- TD-113 [-/- TU] f:T @// ,
+- TD-111: field, @//
+- TD-112: type ; @//
+- TD-113: f:T @// ,
 
-## DONE
+## Rethinks
+
+* `=`, `==` and `<-`
+    * comparison: 1 == 1
+    * binding: x == get\_something
+    * pattern match: Just _ == maybe
+    * binding with destruction: Just elem == list !! ix
+    * record construction: Type { field = init } \
+      Type { field: init }?
+      Type { field := init }?
+    * record mutation: obj { field <- new\_value } \
+      obj { field <-: new\_value }
+      obj { field: new\_value }
+      obj { field := init }?
+      obj { field = new\_value } \
+
+
+## Done
 
 - (newer)
-- TD-121 [-/2 TU] update doc/syntax.md.
-- TD-151 [2/2 TU] support post { cond }.
-- TD-131 [1/1 TU] set pragma
-- TD-106 [1/1 TU] type a = b; format should be "b" rather than "b |"
-- TD-102 [4/1 TU] type t = a b
-- TD-101 [0/1 TU] type t a
+- TD-159: add doc for scope (doc/syntax.md).
+- TD-160: add use statement (doc/syntax.md).
+- TD-108: library. vocabulary.
+- TD-157: implement prefix op (->) rather than user defined op.
+- TD-156: split up PunctOper `=>`, `:`, `->`.
+- TD-155: function expr: `fn (arg) ...: t -> body`
+- TD-121: update doc/syntax.md.
+- TD-151: support post { cond }.
+- TD-131: set pragma
+- TD-106: type a = b; format should be "b" rather than "b |"
+- TD-102: type t = a b
+- TD-101: type t a
 - OK: state description, `state {}@{- ... -}`
 - OK: transition name (arg) (arg:type) ...  // type annotation is optional
 - OK: target state
