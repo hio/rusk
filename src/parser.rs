@@ -2918,7 +2918,6 @@ impl Parser
 		let mut elems = vec![ first, ];
 		loop
 		{
-		println!("XXX: x1: {} {:?}", self.pos, self.tokens.get(self.pos));
 			match self.punct_comma()
 			{
 				Ok(()) => (),
