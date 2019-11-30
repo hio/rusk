@@ -484,6 +484,8 @@ fn test_state_transition()
 	test_parse("state s{ transition a --> { post{ state' == state; a' == a } } }");
 	test_parse("state s{ transition a --> { post{ state' == state; a' == a; } } }");
 
+	test_parse("state s{ transition a --> { post{ a } post { b } } }");
+
 	// compat.
 	test_parse("state s{ transition a --> { post{ a' = a } } }");
 	test_parse("state s{ transition a --> { post{ a' = a; } } }");
@@ -1337,11 +1339,24 @@ impl Parser
 			},
 		}
 		self.punct_brace_left()?;
-		let post_cond = self.post_cond()?;
-		self.punct_brace_right()?;
+
+		let mut posts = Vec::new();
+		loop
+		{
+			let err = match self.punct_brace_right() {
+				Ok(()) => break,
+				Err(err) => err,
+			};
+
+			match self.post_cond()
+			{
+				Ok(post) => posts.push(post),
+				Err(err2) => return Err(err.merge(err2)),
+			}
+		}
 
 		let desc = self.at_long_description_opt();
-		Ok(ast::TransitionField::new_boxed(name, args, guard.ok(), post_cond, desc))
+		Ok(ast::TransitionField::new_boxed(name, args, guard.ok(), Box::new(posts), desc))
 	}
 
 

@@ -31,11 +31,15 @@ transition ::=
   "transition" event-name arg-list?
   ("when" cond-expr at-phrase-description)?
   "-->" "{"
-    "post" "{"
-      ("target" (target-name <sep-end-by ",">)+ ";")?
-      (cond-expr \<sep-end-by ";"\>)+
-    "}" at-stmt-description
+    post-cond+
   "}" ;;
+
+post-cond ::=
+  "post" "{"
+    ("target" (target-name <sep-end-by ",">)+ ";")?
+    (cond-expr \<sep-end-by ";"\>)+
+  "}" at-stmt-description
+  ;;
 
 target-name ::= <identifier> | "state" ;;
 result-name ::= <identifier followed by "'"> | "state'" ;;

@@ -20,3 +20,11 @@ ddd
 **ddd**
 ddd
 -}
+
+state x
+{
+	transition x --> {
+		post { target a; a' == 1 }@{- aa -}
+		post { target b, state; b' == 2; state' == b; }@{- bb -}
+	}
+}
