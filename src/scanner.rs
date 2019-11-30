@@ -860,6 +860,11 @@ impl Tokenizer
 					Box::new(Token::Punctuation(Box::new(Punctuation { kind: PunctuationKind::TransitionArrow, offset }))),
 				);
 			},
+			"->" => {
+				self.tokens.push(
+					Box::new(Token::PunctOper(Box::new(PunctOper { kind: PunctOperKind::Arrow, offset }))),
+				);
+			},
 			"<-" => {
 				self.tokens.push(
 					Box::new(Token::Punctuation(Box::new(Punctuation { kind: PunctuationKind::LeftArrow, offset }))),
@@ -935,11 +940,6 @@ impl Tokenizer
 			"-" => {
 				self.tokens.push(
 					Box::new(Token::Operator(Box::new(Operator { kind: OperatorKind::Sub, offset }))),
-				);
-			},
-			"->" => {
-				self.tokens.push(
-					Box::new(Token::PunctOper(Box::new(PunctOper { kind: PunctOperKind::Arrow, offset }))),
 				);
 			},
 			"*" => {
