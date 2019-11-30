@@ -771,7 +771,7 @@ impl Tokenizer
 			"var" =>         KeywordKind::Var,
 			"when" =>        KeywordKind::When,
 			"__event_set" => KeywordKind::EventSetPragma,
-			"__set"       => KeywordKind::SetPragma,
+			"__set" =>       KeywordKind::SetPragma,
 			_ => {
 				self.tokens.push(
 					Box::new(Token::Identifier(Box::new(Identifier { text, offset })))
