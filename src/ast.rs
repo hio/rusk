@@ -832,6 +832,7 @@ pub enum Expr
 	BinOp(Box<BinOpExpr>),
 	RecordMutation(Box<RecordMutation>),
 	Quantifier(Box<QuantifierExpr>),
+	Fn(Box<FnExpr>),
 	Any,
 	State,
 }
@@ -969,6 +970,12 @@ impl Expr
 		Box::new(Expr::Quantifier(QuantifierExpr::new_boxed(kind, exprs, cond)))
 	}
 
+	pub fn new_fn_boxed(args: Box<ArgList>, typ: Option<Box<Expr>>, body: Option<Box<Expr>>) -> Box<Expr>
+	{
+		Box::new(Expr::Fn(FnExpr::new_boxed(args, typ, body)))
+	}
+
+
 	pub fn new_any_boxed() -> Box<Expr>
 	{
 		Box::new(Expr::Any)
@@ -1024,6 +1031,7 @@ impl Expr
 		Expr::RecordMutation(_) => Prec::Term,
 		Expr::Any => Prec::Term,
 		Expr::Quantifier(_) => Prec::Term,
+		Expr::Fn(_) => Prec::Term,
 		Expr::State => Prec::Term,
 		}
 	}
@@ -1619,4 +1627,41 @@ pub enum QuantifierKind
 	Exists,
 	Exists1,
 	ForAll,
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FnExpr
+{
+	args: Box<ArgList>,
+	typ: Option<Box<Expr>>,
+	body: Option<Box<Expr>>,
+}
+
+
+impl FnExpr
+{
+	pub fn new_boxed(args: Box<ArgList>, typ: Option<Box<Expr>>, body: Option<Box<Expr>>) -> Box<FnExpr>
+	{
+		Box::new(FnExpr {
+			args,
+			typ,
+			body,
+		})
+	}
+
+	pub fn args(&self) -> &ArgList
+	{
+		&self.args
+	}
+
+	pub fn typ(&self) -> &Option<Box<Expr>>
+	{
+		&self.typ
+	}
+
+	pub fn body(&self) -> &Option<Box<Expr>>
+	{
+		&self.body
+	}
 }

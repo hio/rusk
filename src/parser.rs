@@ -86,6 +86,7 @@ pub enum NotFound
 	Name(Offset),
 	Number(Offset),
 	TokString(Offset),
+	Arrow(Offset),
 	ParenLeft(Offset),
 	ParenRight(Offset),
 	Comma(Offset),
@@ -113,6 +114,7 @@ pub enum NotFound
 	Event(Offset),
 	Exists(Offset),
 	Exists1(Offset),
+	Fn(Offset),
 	ForAll(Offset),
 	If(Offset),
 	In(Offset),
@@ -146,6 +148,7 @@ impl NotFound
 		NotFound::Name(offset) => *offset,
 		NotFound::Number(offset) => *offset,
 		NotFound::TokString(offset) => *offset,
+		NotFound::Arrow(offset) => *offset,
 		NotFound::ParenLeft(offset) => *offset,
 		NotFound::ParenRight(offset) => *offset,
 		NotFound::Comma(offset) => *offset,
@@ -173,6 +176,7 @@ impl NotFound
 		NotFound::Event(offset) => *offset,
 		NotFound::Exists(offset) => *offset,
 		NotFound::Exists1(offset) => *offset,
+		NotFound::Fn(offset) => *offset,
 		NotFound::ForAll(offset) => *offset,
 		NotFound::If(offset) => *offset,
 		NotFound::In(offset) => *offset,
@@ -354,6 +358,11 @@ fn test_expr()
 	test_parse("const x = {| a |};");
 	test_parse("const x = |[ a ]|;");
 
+	test_parse("const x = fn:t -> e;");
+	test_parse("const x = fn x :t -> e;");
+	test_parse("const x = fn x (y:Y) (z 1: Z 2) :t -> e;");
+	test_parse("const x : fn x (y:Y) (z 1: Z 2) :t = fn x (y:Y) (z 1: Z 2) :t -> e;");
+
 	// tuple?
 	// bind?, pipe?.
 }
@@ -362,7 +371,7 @@ fn test_expr()
 #[test]
 fn test_proc()
 {
-	test_parse("const x = p -> q;");
+	test_parse("const x = p -> q;"); // prefix operator.
 	test_parse("const x = p -- ev_set;");
 	test_parse("const x = p ||| q;");
 	test_parse("const x = STOP;");
@@ -492,6 +501,7 @@ struct ExprOpts
 	application: bool,
 	in_op: bool,
 	as_a_op: bool,
+	prefix_op: bool,
 	imply_op: bool,
 }
 
@@ -505,6 +515,7 @@ impl ExprOpts
 			application: true, // a b.
 			in_op: true, // a in b.
 			as_a_op: true, // a : b.
+			prefix_op: true,  // a -> b.
 			imply_op: true, // a => b.
 		}
 	}
@@ -522,6 +533,14 @@ impl ExprOpts
 	{
 		let mut opts = Self::standard();
 		opts.as_a_op = false;
+		opts
+	}
+
+
+	fn no_prefix_op() -> ExprOpts
+	{
+		let mut opts = Self::standard();
+		opts.prefix_op = false;
 		opts
 	}
 }
@@ -603,6 +622,18 @@ impl Parser
 				self.pos -= 1;
 				false
 			},
+		}
+	}
+
+
+	fn punct_arrow(&mut self) -> Result<(), Box<Error>>
+	{
+		if self.punct_oper(scanner::PunctOperKind::Arrow)
+		{
+			Ok(())
+		}else
+		{
+			Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::Arrow(self.pos)))))
 		}
 	}
 
@@ -2313,6 +2344,18 @@ impl Parser
 		};
 
 		self.restore(&save);
+		let err = match self.fn_expr() {
+			Ok((expr, _err)) => return Ok(expr),
+			Err(err2) => {
+				if self.pos != save.pos
+				{
+					return Err(err2)
+				}
+				err.merge(err2)
+			},
+		};
+
+		self.restore(&save);
 		let err = if self.keyword(scanner::KeywordKind::Any)
 		{
 			return Ok(ast::Expr::new_any_boxed());
@@ -2963,6 +3006,35 @@ impl Parser
 		let rhs = self.expr_(&opts)?;
 
 		Ok(ast::Mutation::new_boxed(lhs, ltype.ok(), Box::new("=".into()), rhs))
+	}
+
+
+	fn fn_expr(&mut self) -> Result<(Box<ast::Expr>, Option<Box<Error>>), Box<Error>>
+	{
+		if !self.keyword(scanner::KeywordKind::Fn)
+		{
+			let err = Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::Fn(self.pos))));
+			return Err(err);
+		}
+
+		let (args, err) = self.arg_list_opt()?;
+
+		let (typ, err) = match self.punct_colon()
+		{
+			Ok(()) => (Some(self.expr_(&ExprOpts::no_prefix_op())?), None),
+			Err(err2) => (None, Some(err.merge(err2))),
+		};
+
+		let (expr, err) = match self.punct_arrow()
+		{
+			Ok(()) => (Some(self.expr()?), None),
+			Err(err2) => match err {
+				Some(err) => (None, Some(err.merge(err2))),
+				None => (None, Some(err2)),
+			},
+		};
+
+		Ok((ast::Expr::new_fn_boxed(args, typ, expr), err))
 	}
 
 

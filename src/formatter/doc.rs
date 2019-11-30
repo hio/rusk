@@ -856,6 +856,7 @@ impl ToDoc for ast::Expr
 		ast::Expr::Let(x) => x.to_doc(),
 		ast::Expr::RecordMutation(x) => x.to_doc(),
 		ast::Expr::Quantifier(x) => x.to_doc(),
+		ast::Expr::Fn(x) => x.to_doc(),
 		ast::Expr::Any => Doc::Static("any"),
 		ast::Expr::State => Doc::Static("state"),
 		}
@@ -1143,5 +1144,33 @@ impl ToDoc for ast::QuantifierExpr
 			Doc::Static("|"),
 			self.cond().to_doc(),
 		]))
+	}
+}
+
+
+impl ToDoc for ast::FnExpr
+{
+	fn to_doc(&self) -> Doc
+	{
+		Doc::SepBy(" ", Rc::new(vec![
+			vec![ Doc::Static("fn") ],
+			self.args().args().iter().map(|x| x.to_doc()).collect::<Vec<_>>(),
+			match self.typ()
+			{
+				Some(typ) => vec![
+						Doc::Static(":"),
+						typ.to_doc(),
+					],
+				None => Vec::new(),
+			},
+			match self.body()
+			{
+				Some(body) => vec![
+					Doc::Static("->"),
+					body.to_doc(),
+				],
+				None => Vec::new(),
+			},
+		].concat()))
 	}
 }
