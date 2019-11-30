@@ -130,8 +130,7 @@ impl ToDocWithTitle for ast::Module
 				|items| Doc::Fragment(Rc::new(vec![
 						Doc::Heading(2, Rc::new(Doc::Static("Events"))),
 						Doc::Static("\n"),
-						Doc::Static("| # | Name | Summary | Description |\n"),
-						Doc::Static("|---|------|---------|-------------|\n"),
+						ast::Event::header_doc(),
 						Doc::Fragment(Rc::new(items
 							.iter()
 							.enumerate()
@@ -312,36 +311,11 @@ impl HeaderDoc for ast::Event
 {
 	fn header_doc() -> Doc
 	{
-		Doc::Fragment(Rc::new(vec![
-			Doc::Heading(2, Rc::new(Doc::Static("Events"))),
-			Doc::Static("\n"),
-		]))
-	}
-}
-
-
-impl ToDoc for ast::Event
-{
-	fn to_doc(&self) -> Doc
-	{
-		Doc::Fragment(Rc::new(vec![
-			Self::header_doc(),
-
-			if_has_or_(
-				self.items(),
-				"No events.\n",
-				|items| Doc::Fragment(Rc::new(vec![
-						vec![ Doc::Static(concat![
-							"| # | Name | Summary | Description |\n",
-							"|---|------|---------|-------------|\n",
-						]) ],
-						items
-							.iter()
-							.enumerate()
-							.map(|(i, x)| x.to_doc(i + 1))
-							.collect::<Vec<_>>(),
-					].concat())),
-			),
+		Doc::HeaderRow(Rc::new(vec![
+			Doc::Static("#"),
+			Doc::Static("Name"),
+			Doc::Static("Summary"),
+			Doc::Static("Description"),
 		]))
 	}
 }
@@ -472,10 +446,14 @@ impl HeaderDoc for ast::VarField
 {
 	fn header_doc() -> Doc
 	{
-		Doc::Static(concat![
-			"| # | Name | Type | Init | Summary | Description |\n",
-			"|---|------|------|------|---------|-------------|\n",
-		])
+		Doc::HeaderRow(Rc::new(vec![
+			Doc::Static("#"),
+			Doc::Static("Name"),
+			Doc::Static("Type"),
+			Doc::Static("Init"),
+			Doc::Static("Summary"),
+			Doc::Static("Description"),
+		]))
 	}
 }
 
@@ -506,10 +484,13 @@ impl HeaderDoc for ast::InvariantField
 {
 	fn header_doc() -> Doc
 	{
-		Doc::Static(concat![
-			"| # | Name | Summary | Logical formula | Description |\n",
-			"|---|------|---------|-----------------|-------------|\n",
-		])
+		Doc::HeaderRow(Rc::new(vec![
+			Doc::Static("#"),
+			Doc::Static("Name"),
+			Doc::Static("Summary"),
+			Doc::Static("Logical Formula"),
+			Doc::Static("Description"),
+		]))
 	}
 }
 
@@ -748,10 +729,14 @@ impl HeaderDoc for ast::VarStmt
 {
 	fn header_doc() -> Doc
 	{
-		Doc::Static(concat![
-			"| # | Name | Type | Init | Summary | Description |\n",
-			"|---|------|------|------|---------|-------------|\n",
-		])
+		Doc::HeaderRow(Rc::new(vec![
+			Doc::Static("#"),
+			Doc::Static("Name"),
+			Doc::Static("Type"),
+			Doc::Static("Init"),
+			Doc::Static("Summary"),
+			Doc::Static("Description"),
+		]))
 	}
 }
 
