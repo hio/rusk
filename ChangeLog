@@ -2,6 +2,21 @@
 title: ChangeLog
 ---
 
+## Release 0.1.11 (2019-12-01)
+
+* parser
+
+	* fn expr.
+	* support multiple post conditions.
+	* fix, state can be put in 2nd or later in target of post conditions.
+	* support map expr (with __map prefix)
+	* list comprehension from element [x | elem <- collection]
+
+* formatter
+
+	* many internal improvements.
+	* support block level markups.
+
 ## Release 0.1.10 (2019-11-28)
 
 * parser

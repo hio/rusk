@@ -189,7 +189,7 @@ fn main() -> std::io::Result<()>
 	let arg = args.peek().map_or("--help".into(), |x| x.clone());
 	if arg == "-V" || arg == "--version"
 	{
-		println!("rusk version 0.1.10");
+		println!("rusk version 0.1.11");
 		return Ok(());
 	}
 	if arg == "-h" || arg == "--help"
