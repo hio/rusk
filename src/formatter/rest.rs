@@ -109,11 +109,11 @@ impl WriteRestText for Doc
 			Doc::SepEndBy(ref sep, ref end, ref v) =>
 				sep_end_by(f, &Doc::Static(sep), &Doc::Static(end), v, opts),
 
-			Doc::HeaderRow(ref v) => {
+			Doc::Table(ref header) => {
 				write!(f, ".. list-table::\n")?;
 				write!(f, "   :header-rows: 1\n")?;
 				write!(f, "\n")?;
-				let mut iter = v.iter();
+				let mut iter = header.iter();
 				if let Some(first) = iter.next()
 				{
 					write!(f, "  * - ")?;

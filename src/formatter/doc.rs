@@ -22,7 +22,7 @@ pub enum Doc
 	SepBy(&'static str, Rc<Vec<Doc>>),
 	SepByDoc(Rc<Doc>, Rc<Vec<Doc>>),
 	SepEndBy(&'static str, &'static str, Rc<Vec<Doc>>),
-	HeaderRow(Rc<Vec<Doc>>),
+	Table(Rc<Vec<Doc>>),
 	Row(Rc<Vec<Doc>>),
 	Cell(Rc<Doc>),
 }
@@ -60,7 +60,7 @@ trait ToDocIfHasOr
 
 trait HeaderRow
 {
-	fn header_row() -> Doc;
+	fn header_row() -> Rc<Vec<Doc>>;
 }
 
 
@@ -127,7 +127,7 @@ impl ToDocWithTitle for ast::Module
 				|items| Doc::Fragment(Rc::new(vec![
 						Doc::Heading(2, Rc::new(Doc::Static("Types"))),
 						Doc::Static("\n"),
-						ast::TypeStmt::header_row(),
+						Doc::Table(ast::TypeStmt::header_row()),
 						Doc::Fragment(Rc::new(items
 							.iter()
 							.enumerate()
@@ -144,7 +144,7 @@ impl ToDocWithTitle for ast::Module
 				|items| Doc::Fragment(Rc::new(vec![
 						Doc::Heading(2, Rc::new(Doc::Static("Events"))),
 						Doc::Static("\n"),
-						ast::Event::header_row(),
+						Doc::Table(ast::Event::header_row()),
 						Doc::Fragment(Rc::new(items
 							.iter()
 							.enumerate()
@@ -161,7 +161,7 @@ impl ToDocWithTitle for ast::Module
 					Doc::Fragment(Rc::new(vec![
 						Doc::Heading(2, Rc::new(Doc::Static("Module Variables"))),
 						Doc::Static("\n"),
-						ast::VarStmt::header_row(),
+						Doc::Table(ast::VarStmt::header_row()),
 						Doc::Fragment(Rc::new(self.vars()
 							.iter()
 							.enumerate()
@@ -179,7 +179,7 @@ impl ToDocWithTitle for ast::Module
 					Doc::Heading(2, Rc::new(Doc::Static("Module Invariants"))),
 					Doc::Static("\n"),
 					Doc::Fragment(Rc::new(vec![
-						ast::InvariantField::header_row(),
+						Doc::Table(ast::InvariantField::header_row()),
 						Doc::Fragment(Rc::new(
 							self.invariants()
 								.iter()
@@ -204,15 +204,15 @@ impl ToDocWithTitle for ast::Module
 
 impl HeaderRow for ast::TypeStmt
 {
-	fn header_row() -> Doc
+	fn header_row() -> Rc<Vec<Doc>>
 	{
-		Doc::HeaderRow(Rc::new(vec![
+		Rc::new(vec![
 			Doc::Static("#"),
 			Doc::Static("Name"),
 			Doc::Static("Summary"),
 			Doc::Static("Definition"),
 			Doc::Static("Description"),
-		]))
+		])
 	}
 }
 
@@ -323,14 +323,14 @@ fn to_description_doc(desc: &String) -> Doc
 
 impl HeaderRow for ast::Event
 {
-	fn header_row() -> Doc
+	fn header_row() -> Rc<Vec<Doc>>
 	{
-		Doc::HeaderRow(Rc::new(vec![
+		Rc::new(vec![
 			Doc::Static("#"),
 			Doc::Static("Name"),
 			Doc::Static("Summary"),
 			Doc::Static("Description"),
-		]))
+		])
 	}
 }
 
@@ -404,7 +404,7 @@ impl ToDocWithModule for ast::State
 				self.fields(),
 				|field| field.get_var(),
 				|vars| Doc::Fragment(Rc::new(vec![
-						ast::VarField::header_row(),
+						Doc::Table(ast::VarField::header_row()),
 						Doc::Fragment(Rc::new(
 							vars
 								.iter()
@@ -423,7 +423,7 @@ impl ToDocWithModule for ast::State
 				self.fields(),
 				|field| field.get_invariant(),
 				|vec| Doc::Fragment(Rc::new(vec![
-						ast::InvariantField::header_row(),
+						Doc::Table(ast::InvariantField::header_row()),
 						Doc::Fragment(Rc::new(vec
 							.iter()
 							.enumerate()
@@ -440,7 +440,7 @@ impl ToDocWithModule for ast::State
 				self.fields(),
 				|field| field.get_transition(),
 				|transitions| Doc::Fragment(Rc::new(vec![
-						ast::TransitionField::header_row(),
+						Doc::Table(ast::TransitionField::header_row()),
 						Doc::Fragment(Rc::new(
 							transitions
 								.iter()
@@ -458,16 +458,16 @@ impl ToDocWithModule for ast::State
 
 impl HeaderRow for ast::VarField
 {
-	fn header_row() -> Doc
+	fn header_row() -> Rc<Vec<Doc>>
 	{
-		Doc::HeaderRow(Rc::new(vec![
+		Rc::new(vec![
 			Doc::Static("#"),
 			Doc::Static("Name"),
 			Doc::Static("Type"),
 			Doc::Static("Init"),
 			Doc::Static("Summary"),
 			Doc::Static("Description"),
-		]))
+		])
 	}
 }
 
@@ -496,15 +496,15 @@ impl ToDocWithIndex for ast::VarField
 
 impl HeaderRow for ast::InvariantField
 {
-	fn header_row() -> Doc
+	fn header_row() -> Rc<Vec<Doc>>
 	{
-		Doc::HeaderRow(Rc::new(vec![
+		Rc::new(vec![
 			Doc::Static("#"),
 			Doc::Static("Name"),
 			Doc::Static("Summary"),
 			Doc::Static("Logical Formula"),
 			Doc::Static("Description"),
-		]))
+		])
 	}
 }
 
@@ -549,9 +549,9 @@ impl ToDocWithIndex for ast::InvariantField
 
 impl HeaderRow for ast::TransitionField
 {
-	fn header_row() -> Doc
+	fn header_row() -> Rc<Vec<Doc>>
 	{
-		Doc::HeaderRow(Rc::new(vec![
+		Rc::new(vec![
 			Doc::Static("#"),
 			Doc::Static("Event<br />(Name)"),
 			Doc::Static("Event<br />(Summary)"),
@@ -562,7 +562,7 @@ impl HeaderRow for ast::TransitionField
 			Doc::Static("Transition"),
 			Doc::Static("Post cond<br />(Description)"),
 			Doc::Static("Description"),
-		]))
+		])
 	}
 }
 
@@ -741,16 +741,16 @@ impl ToDoc for ast::VarType
 
 impl HeaderRow for ast::VarStmt
 {
-	fn header_row() -> Doc
+	fn header_row() -> Rc<Vec<Doc>>
 	{
-		Doc::HeaderRow(Rc::new(vec![
+		Rc::new(vec![
 			Doc::Static("#"),
 			Doc::Static("Name"),
 			Doc::Static("Type"),
 			Doc::Static("Init"),
 			Doc::Static("Summary"),
 			Doc::Static("Description"),
-		]))
+		])
 	}
 }
 

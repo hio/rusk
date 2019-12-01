@@ -92,9 +92,9 @@ impl WriteMarkdownText for Doc
 			Doc::SepEndBy(ref sep, ref end, ref v) =>
 				sep_end_by(f, &Doc::Static(sep), &Doc::Static(end), v, opts),
 
-			Doc::HeaderRow(ref v) => {
+			Doc::Table(ref header) => {
 				write!(f, "|")?;
-				for elem in v.as_ref()
+				for elem in header.as_ref()
 				{
 					write!(f, " ")?;
 					elem.encode(f, opts)?;
@@ -102,7 +102,7 @@ impl WriteMarkdownText for Doc
 				}
 				write!(f, "\n")?;
 
-				write!(f, "|{}\n", String::from("---|").repeat(v.len()))?;
+				write!(f, "|{}\n", String::from("---|").repeat(header.len()))?;
 				Ok(())
 			},
 
