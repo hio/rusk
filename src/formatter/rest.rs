@@ -109,7 +109,7 @@ impl WriteRestText for Doc
 			Doc::SepEndBy(ref sep, ref end, ref v) =>
 				sep_end_by(f, &Doc::Static(sep), &Doc::Static(end), v, opts),
 
-			Doc::Table(ref header) => {
+			Doc::Table(ref header, ref rows) => {
 				write!(f, ".. list-table::\n")?;
 				write!(f, "   :header-rows: 1\n")?;
 				write!(f, "\n")?;
@@ -132,28 +132,28 @@ impl WriteRestText for Doc
 				}
 				write!(f, "\n")?;
 
-				Ok(())
-			},
-
-			Doc::Row(ref v) => {
-				let mut iter = v.iter();
-				if let Some(first) = iter.next()
+				for row in rows.iter()
 				{
-					write!(f, "  * - ")?;
-					first.encode(f, opts)?;
-					write!(f, "\n")?;
-
-					for elem in iter
+					let mut iter = row.iter();
+					if let Some(first) = iter.next()
 					{
-						write!(f, "    - ")?;
-						elem.encode(f, opts)?;
+						write!(f, "  * - ")?;
+						first.encode(f, opts)?;
 						write!(f, "\n")?;
+
+						for elem in iter
+						{
+							write!(f, "    - ")?;
+							elem.encode(f, opts)?;
+							write!(f, "\n")?;
+						}
+					}else
+					{
+						write!(f, "  * - (no columns)\n")?;
 					}
-				}else
-				{
-					write!(f, "  * - (no columns)\n")?;
+					write!(f, "\n")?;
 				}
-				write!(f, "\n")?;
+
 				Ok(())
 			},
 

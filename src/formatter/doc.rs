@@ -22,8 +22,7 @@ pub enum Doc
 	SepBy(&'static str, Rc<Vec<Doc>>),
 	SepByDoc(Rc<Doc>, Rc<Vec<Doc>>),
 	SepEndBy(&'static str, &'static str, Rc<Vec<Doc>>),
-	Table(Rc<Vec<Doc>>),
-	Row(Rc<Vec<Doc>>),
+	Table(Rc<Vec<Doc>>, Rc<Vec<Rc<Vec<Doc>>>>),
 	Cell(Rc<Doc>),
 }
 
@@ -50,7 +49,7 @@ pub trait ToDocWithModule
 
 trait ToDocRowsWithModule
 {
-	fn to_doc_rows(&self, index: usize, module: &ast::Module) -> Rc<Vec<Doc>>;
+	fn to_doc_rows(&self, index: usize, module: &ast::Module) -> Vec<Rc<Vec<Doc>>>;
 }
 
 trait ToDocIfHasOr
@@ -127,13 +126,14 @@ impl ToDocWithTitle for ast::Module
 				|items| Doc::Fragment(Rc::new(vec![
 						Doc::Heading(2, Rc::new(Doc::Static("Types"))),
 						Doc::Static("\n"),
-						Doc::Table(ast::TypeStmt::header_row()),
-						Doc::Fragment(Rc::new(items
-							.iter()
-							.enumerate()
-							.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
-							.collect::<Vec<_>>()
-						)),
+						Doc::Table(
+							ast::TypeStmt::header_row(),
+							Rc::new(items
+								.iter()
+								.enumerate()
+								.map(|(i, x)| x.to_doc_row(i + 1))
+								.collect::<Vec<_>>()),
+						),
 						Doc::Static("\n"),
 					])),
 			),
@@ -144,13 +144,14 @@ impl ToDocWithTitle for ast::Module
 				|items| Doc::Fragment(Rc::new(vec![
 						Doc::Heading(2, Rc::new(Doc::Static("Events"))),
 						Doc::Static("\n"),
-						Doc::Table(ast::Event::header_row()),
-						Doc::Fragment(Rc::new(items
-							.iter()
-							.enumerate()
-							.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
-							.collect::<Vec<_>>()
-						)),
+						Doc::Table(
+							ast::Event::header_row(),
+							Rc::new(items
+								.iter()
+								.enumerate()
+								.map(|(i, x)| x.to_doc_row(i + 1))
+								.collect::<Vec<_>>()),
+						),
 						Doc::Static("\n"),
 					])),
 			),
@@ -161,13 +162,14 @@ impl ToDocWithTitle for ast::Module
 					Doc::Fragment(Rc::new(vec![
 						Doc::Heading(2, Rc::new(Doc::Static("Module Variables"))),
 						Doc::Static("\n"),
-						Doc::Table(ast::VarStmt::header_row()),
-						Doc::Fragment(Rc::new(self.vars()
-							.iter()
-							.enumerate()
-							.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
-							.collect::<Vec<_>>()
-						)),
+						Doc::Table(
+							ast::VarStmt::header_row(),
+							Rc::new(self.vars()
+								.iter()
+								.enumerate()
+								.map(|(i, x)| x.to_doc_row(i + 1))
+								.collect::<Vec<_>>()),
+						),
 						Doc::Static("\n"),
 					]))
 				},
@@ -179,14 +181,14 @@ impl ToDocWithTitle for ast::Module
 					Doc::Heading(2, Rc::new(Doc::Static("Module Invariants"))),
 					Doc::Static("\n"),
 					Doc::Fragment(Rc::new(vec![
-						Doc::Table(ast::InvariantField::header_row()),
-						Doc::Fragment(Rc::new(
-							self.invariants()
+						Doc::Table(
+							ast::InvariantField::header_row(),
+							Rc::new(self.invariants()
 								.iter()
 								.enumerate()
-								.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
-								.collect::<Vec<_>>()
-						)),
+								.map(|(i, x)| x.to_doc_row(i + 1))
+								.collect::<Vec<_>>()),
+						),
 					])),
 					Doc::Static("\n"),
 				])),
@@ -404,14 +406,16 @@ impl ToDocWithModule for ast::State
 				self.fields(),
 				|field| field.get_var(),
 				|vars| Doc::Fragment(Rc::new(vec![
-						Doc::Table(ast::VarField::header_row()),
-						Doc::Fragment(Rc::new(
-							vars
-								.iter()
-								.enumerate()
-								.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
-								.collect::<Vec<_>>(),
-						)),
+						Doc::Table(
+							ast::VarField::header_row(),
+							Rc::new(
+								vars
+									.iter()
+									.enumerate()
+									.map(|(i, x)| x.to_doc_row(i + 1))
+									.collect::<Vec<_>>(),
+							),
+						),
 					])),
 				"No variables.\n"
 			),
@@ -423,12 +427,14 @@ impl ToDocWithModule for ast::State
 				self.fields(),
 				|field| field.get_invariant(),
 				|vec| Doc::Fragment(Rc::new(vec![
-						Doc::Table(ast::InvariantField::header_row()),
-						Doc::Fragment(Rc::new(vec
-							.iter()
-							.enumerate()
-							.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
-							.collect::<Vec<_>>())),
+						Doc::Table(
+							ast::InvariantField::header_row(),
+							Rc::new(vec
+								.iter()
+								.enumerate()
+								.map(|(i, x)| x.to_doc_row(i + 1))
+								.collect::<Vec<_>>()),
+						),
 					])),
 				"No invariants.\n"
 			),
@@ -440,14 +446,17 @@ impl ToDocWithModule for ast::State
 				self.fields(),
 				|field| field.get_transition(),
 				|transitions| Doc::Fragment(Rc::new(vec![
-						Doc::Table(ast::TransitionField::header_row()),
-						Doc::Fragment(Rc::new(
-							transitions
-								.iter()
-								.enumerate()
-								.map(|(i, x)| Doc::Fragment(x.to_doc_rows(i + 1, module)))
-								.collect::<Vec<_>>(),
-						)),
+						Doc::Table(
+							ast::TransitionField::header_row(),
+							Rc::new(
+								transitions
+									.iter()
+									.enumerate()
+									.map(|(i, x)| x.to_doc_rows(i + 1, module))
+									.collect::<Vec<_>>()
+									.concat(),
+							),
+						),
 					])),
 				"No transitions.\n"
 			),
@@ -568,15 +577,13 @@ impl HeaderRow for ast::TransitionField
 
 impl ToDocRowsWithModule for ast::TransitionField
 {
-	fn to_doc_rows(&self, i: usize, module: &ast::Module) -> Rc<Vec<Doc>>
+	fn to_doc_rows(&self, i: usize, module: &ast::Module) -> Vec<Rc<Vec<Doc>>>
 	{
-		Rc::new(
-			self.posts()
-				.iter()
-				.enumerate()
-				.map(|(j, post)| Doc::Row(transition_row(self, i, module, j, post)))
-				.collect::<Vec<_>>()
-		)
+		self.posts()
+			.iter()
+			.enumerate()
+			.map(|(j, post)| transition_row(self, i, module, j, post))
+			.collect::<Vec<_>>()
 	}
 }
 
