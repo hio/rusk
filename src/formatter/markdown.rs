@@ -56,6 +56,12 @@ impl WriteMarkdownText for Doc
 		match self
 		{
 			Doc::Empty => Ok(()),
+			Doc::Title(title) => {
+				write!(f, "---\n")?;
+				write!(f, "title: {}\n", title)?;
+				write!(f, "---\n")?;
+				Ok(())
+			},
 			Doc::Heading(n, doc) => {
 				write!(f, "{} ", String::from("#").repeat(*n))?;
 				doc.encode(f, opts)?;

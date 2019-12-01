@@ -57,19 +57,27 @@ impl WriteRestText for Doc
 		match self
 		{
 			Doc::Empty => Ok(()),
+			Doc::Title(title) => {
+				let width = text_width(title);
+				write!(f, "{}\n", String::from("=").repeat(width))?;
+				write!(f, "{}\n", title)?;
+				write!(f, "{}\n", String::from("=").repeat(width))?;
+				write!(f, "\n")?;
+				write!(f, ".. raw:: never // workaround for pandoc.\n")?;
+				Ok(())
+			},
 			Doc::Heading(n, doc) => {
 				let s = doc.to_rest_text();
 				let width = text_width(&s);
 				match n
 				{
 					2 => {
-						write!(f, "{}\n", String::from("=").repeat(width))?;
 						write!(f, "{}\n", s)?;
 						write!(f, "{}\n", String::from("=").repeat(width))?;
 					},
 					3 => {
 						write!(f, "{}\n", s)?;
-						write!(f, "{}\n", String::from("=").repeat(width))?;
+						write!(f, "{}\n", String::from("-").repeat(width))?;
 					},
 					_ => {
 						panic!("invalid heading level");

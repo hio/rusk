@@ -11,6 +11,7 @@ use serde::{Serialize, Deserialize};
 pub enum Doc
 {
 	Empty,
+	Title(Rc<String>),
 	Heading(usize, Rc<Doc>),
 	Fragment(Rc<Vec<Doc>>),
 	Number(usize),
@@ -117,13 +118,7 @@ impl ToDocWithTitle for ast::Module
 	fn to_doc(&self, title: &String) -> Doc
 	{
 		Doc::Fragment(Rc::new(vec![
-			Doc::Static("---\n"),
-			Doc::Fragment(Rc::new(vec![
-				Doc::Static("title: "),
-				Doc::String(title.clone().into()),
-				Doc::Static("\n"),
-			])),
-			Doc::Static("---\n"),
+			Doc::Title(Rc::new(title.clone())),
 			Doc::Static("\n"),
 
 			if_has_or_(
