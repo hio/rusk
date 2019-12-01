@@ -2,10 +2,34 @@
 use crate::formatter::doc::{ Doc };
 
 
+struct Opts
+{
+	in_code: bool,
+}
+
+
+impl Opts
+{
+	fn new() -> Opts
+	{
+		Opts {
+			in_code: false,
+		}
+	}
+
+
+	fn in_code() -> Opts
+	{
+		Opts {
+			in_code: true,
+		}
+	}
+}
+
+
 pub trait ToMarkdownText
 {
 	fn to_markdown_text(&self) -> String;
-	fn encode(&self, f: &mut impl std::fmt::Write) -> std::fmt::Result;
 }
 
 
@@ -14,45 +38,51 @@ impl ToMarkdownText for Doc
 	fn to_markdown_text(&self) -> String
 	{
 		let mut s = String::new();
-		self.encode(&mut s).unwrap();
+		self.encode(&mut s, &Opts::new()).unwrap();
 		s
 	}
+}
 
-	fn encode(&self, f: &mut impl std::fmt::Write) -> std::fmt::Result
+trait WriteMarkdownText
+{
+	fn encode(&self, f: &mut impl std::fmt::Write, opts: &Opts) -> std::fmt::Result;
+}
+
+
+impl WriteMarkdownText for Doc
+{
+	fn encode(&self, f: &mut impl std::fmt::Write, opts: &Opts) -> std::fmt::Result
 	{
 		match self
 		{
 			Doc::Empty => Ok(()),
 			Doc::Heading(n, doc) => {
 				write!(f, "{} ", String::from("#").repeat(*n))?;
-				doc.encode(f)?;
+				doc.encode(f, opts)?;
 				write!(f, "\n")?;
 				Ok(())
 			},
 			Doc::Fragment(ref v) => {
 				for elem in v.as_ref()
 				{
-					elem.encode(f)?;
+					elem.encode(f, opts)?;
 				}
 				Ok(())
 			},
 			Doc::Number(n) => write!(f, "{}", n),
-			Doc::String(ref s) => escape(f, s),
+			Doc::String(ref s) => escape(f, s, opts),
 			Doc::Static(ref s) => write!(f, "{}", s),
 			Doc::Br => write!(f, "<br />"),
 			Doc::Code(ref node) => {
 				write!(f, "``")?;
-				let mut s = String::new();
-				node.encode(&mut s)?;
-				let s = s.replace("\\_", "_"); // XXX: should be processed by inner works.
-				write!(f, "{}", s)?;
+				node.encode(f, &Opts::in_code())?;
 				write!(f, "``")
 			},
 
 			Doc::SepBy(ref sep, ref v) =>
-				sep_end_by(f, &Doc::Static(sep), &Doc::Empty, v),
+				sep_end_by(f, &Doc::Static(sep), &Doc::Empty, v, opts),
 			Doc::SepByDoc(ref sep, ref v) =>
-				sep_end_by(f, sep, &Doc::Empty, v),
+				sep_end_by(f, sep, &Doc::Empty, v, opts),
 
 			Doc::SepEndBy(ref sep, ref end, ref v) => {
 				let mut iter = v.iter();
@@ -60,11 +90,11 @@ impl ToMarkdownText for Doc
 				{
 					None => Ok(()),
 					Some(ref first) => {
-						first.encode(f)?;
+						first.encode(f, opts)?;
 						for i in iter
 						{
 							write!(f, "{}", sep)?;
-							i.encode(f)?;
+							i.encode(f, opts)?;
 						}
 						write!(f, "{}", end)?;
 						Ok(())
@@ -77,7 +107,7 @@ impl ToMarkdownText for Doc
 				for elem in v.as_ref()
 				{
 					write!(f, " ")?;
-					elem.encode(f)?;
+					elem.encode(f, opts)?;
 					write!(f, " |")?;
 				}
 				write!(f, "\n")?;
@@ -91,7 +121,7 @@ impl ToMarkdownText for Doc
 				for elem in v.as_ref()
 				{
 					write!(f, " ")?;
-					elem.encode(f)?;
+					elem.encode(f, opts)?;
 					write!(f, " |")?;
 				}
 				write!(f, "\n")?;
@@ -101,7 +131,7 @@ impl ToMarkdownText for Doc
 			Doc::Cell(ref v) => {
 				//XXX: should be processed by inner works.
 				let mut s = String::new();
-				v.encode(&mut s)?;
+				v.encode(&mut s, opts)?;
 				let s = s.trim().replace("\n", "<br />");
 				let s = s.replace("|", "\\|");
 				write!(f, "{}", s)?;
@@ -112,36 +142,42 @@ impl ToMarkdownText for Doc
 }
 
 
-fn sep_end_by(f: &mut impl std::fmt::Write, sep: &Doc, end: &Doc, v: &Vec<Doc>) -> std::fmt::Result
+fn sep_end_by(f: &mut impl std::fmt::Write, sep: &Doc, end: &Doc, v: &Vec<Doc>, opts: &Opts) -> std::fmt::Result
 {
 	let mut iter = v.iter();
 	match iter.next()
 	{
 		None => (),
 		Some(ref first) => {
-			first.encode(f)?;
+			first.encode(f, opts)?;
 			for item in iter
 			{
-				sep.encode(f)?;
-				item.encode(f)?;
+				sep.encode(f, opts)?;
+				item.encode(f, opts)?;
 			}
 			()
 		},
 	}
-	end.encode(f)
+	end.encode(f, opts)
 }
 
 
-fn escape(f: &mut impl std::fmt::Write, s: &String) -> std::fmt::Result
+fn escape(f: &mut impl std::fmt::Write, s: &String, opts: &Opts) -> std::fmt::Result
 {
-	let mut iter = s.chars();
-	while let Some(ch) = iter.next()
+	if opts.in_code
 	{
-		match ch
+		write!(f, "{}", s)?;
+	}else
+	{
+		let mut iter = s.chars();
+		while let Some(ch) = iter.next()
 		{
-			'\\' => write!(f, "\\\\")?,
-			'_' => write!(f, "\\{}", ch)?,
-			ch => write!(f, "{}", ch)?,
+			match ch
+			{
+				'\\' => write!(f, "\\\\")?,
+				'_' => write!(f, "\\{}", ch)?,
+				ch => write!(f, "{}", ch)?,
+			}
 		}
 	}
 	Ok(())

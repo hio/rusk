@@ -35,8 +35,6 @@ title: TODO
 - TD-125: case x|arm... rather than match x{arm...}
 - TD-127: unicode block, mathematical operators
 - TD-128: ReST formatter
-- TD-132: Doc encode option/introduce.
-- TD-133: Doc encode option/no backslash escape in code.
 - TD-134: Doc encode option/no line-feed in table cell.
 - TD-135: Doc encode option/never twice same decoration.
 - TD-137: parse markdown in description.
@@ -85,6 +83,8 @@ blocked/blocks:
 ## Done
 
 - (newer)
+- TD-132: Doc encode option/introduce.
+- TD-133: Doc encode option/no backslash escape in code.
 - TD-130: text width
 - TD-158: \_\_map { k |-> v }
 - TD-159: add doc for scope (doc/syntax.md).
