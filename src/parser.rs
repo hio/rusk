@@ -341,8 +341,10 @@ fn test_expr()
 	test_parse("const r = [ 1 | 2, 3 ];");
 	test_parse("const r = [ 1 | 2, 3, ];");
 
-	test_parse("const r = [ f a | a in s & a < threshold ];");
-	test_parse("const r = [ f a | a : T & a < threshold ];");
+	test_parse("const r = [ f a | a <- s, a < threshold ];");
+	test_parse("const r = [ f a | a : T, a < threshold ];");
+	test_parse("const r = [ f a | a in s & a < threshold ];"); // deprecated.
+	test_parse("const r = [ f a | a : T & a < threshold ];"); // deprecated.
 
 	test_parse("const x = __set {};");
 	test_parse("const x = __set { 1 };");
@@ -1891,6 +1893,19 @@ impl Parser
 						},
 					}
 				},
+
+				Some(&scanner::Token::Punctuation(ref punct)) => {
+					match punct.kind()
+					{
+						scanner::PunctuationKind::LeftArrow =>
+							punct.to_code().into(),
+						_ => {
+							self.restore(save);
+							return Ok(lhs);
+						},
+					}
+				},
+
 				_ => {
 					self.restore(save);
 					return Ok(lhs)

@@ -6,7 +6,6 @@ title: TODO
 
 ### Near Future
 
-- TD-150: list comprehension [x | elem <- collection] rather than [x | elem in collection].
 - TD-104: tau (arg) ... guard -\->
 
 ### Misc
@@ -80,6 +79,7 @@ blocked/blocks:
 ## Done
 
 - (newer)
+- TD-150: list comprehension [x | elem <- collection] rather than [x | elem in collection].
 - RF-139: allow space chars between @ and {- -}
 - TD-162: Doc::PlainText, MarkedText
 - TD-134: Doc encode option/no line-feed in table cell.

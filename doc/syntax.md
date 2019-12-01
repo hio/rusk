@@ -153,8 +153,7 @@ let-expr ::=
 
 * list comprehension
 	* generator + filter + map.
-	* TODO: from collection: "[" expr "|" expr "<-" collection "," ... "," cond-expr "," ... "]"
-	* from collection: "[" expr "|" expr "in" collection "," ... "," cond-expr "," ... "]"
+	* from collection: "[" expr "|" expr "<-" collection "," ... "," cond-expr "," ... "]"
 	* from type: "[" expr "|" expr ":" type-expr "," ... "," cond-expr ... "]"
 	* collection ::= expr;;
 	* type-expr ::= expr;;
