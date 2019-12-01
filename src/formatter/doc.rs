@@ -236,7 +236,16 @@ impl ToDocRow for ast::TypeStmt
 				Doc::Cell(Rc::new(self.items()[0].to_doc()))
 			}else
 			{
-				Doc::Cell(Rc::new(Doc::SepEndBy(" |<br />", " |", Rc::new(self.items().iter().map(|item| item.to_doc()).collect::<Vec<_>>()))))
+				Doc::Cell(Rc::new(Doc::SepByDoc(
+					Rc::new(Doc::Fragment(Rc::new(vec![
+						Doc::Static(" |"),
+						Doc::Br,
+						Doc::Static("\n"),
+					]))),
+					Rc::new(
+						self.items().iter().map(|item| item.to_doc()).collect::<Vec<_>>()
+					)
+				)))
 			},
 			// | {desc} |
 			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::String(Rc::new(desc.clone()))))),
@@ -562,14 +571,14 @@ impl HeaderRow for ast::TransitionField
 	{
 		Rc::new(vec![
 			Doc::Static("#"),
-			Doc::Static("Event<br />(Name)"),
-			Doc::Static("Event<br />(Summary)"),
-			Doc::Static("Guard<br />(Expr)"),
-			Doc::Static("Guard<br />(Description)"),
-			Doc::Static("Post cond<br />(Target)"),
-			Doc::Static("Post cond<br />(Expr)"),
+			Doc::Static("Event\n(Name)"),
+			Doc::Static("Event\n(Summary)"),
+			Doc::Static("Guard\n(Expr)"),
+			Doc::Static("Guard\n(Description)"),
+			Doc::Static("Post cond\n(Target)"),
+			Doc::Static("Post cond\n(Expr)"),
 			Doc::Static("Transition"),
-			Doc::Static("Post cond<br />(Description)"),
+			Doc::Static("Post cond\n(Description)"),
 			Doc::Static("Description"),
 		])
 	}
@@ -638,8 +647,8 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 				.collect::<Vec<_>>()),
 		),
 		// | {post_expr} |
-		Doc::SepBy(
-			"<br />",
+		Doc::SepByDoc(
+			Rc::new(Doc::Br),
 			Rc::new(post.exprs()
 				.iter()
 				.filter(|x| !x.is_transition())
@@ -650,8 +659,8 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 				.collect::<Vec<_>>()),
 		),
 		// | {transition} |
-		Doc::SepBy(
-			"<br />",
+		Doc::SepByDoc(
+			Rc::new(Doc::Br),
 			Rc::new(post.exprs()
 				.iter()
 				.filter(|x| x.is_transition())

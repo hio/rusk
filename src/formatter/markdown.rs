@@ -103,15 +103,7 @@ impl WriteMarkdownText for Doc
 
 			Doc::Table(ref header, ref rows) => write_table(f, opts, header, rows),
 
-			Doc::Cell(ref v) => {
-				//XXX: should be processed by inner works.
-				let mut s = String::new();
-				v.encode(&mut s, opts)?;
-				let s = s.trim().replace("\n", "<br />");
-				let s = s.replace("|", "\\|");
-				write!(f, "{}", s)?;
-				Ok(())
-			},
+			Doc::Cell(ref v) => v.encode(f, opts),
 		}
 	}
 }
@@ -193,18 +185,26 @@ fn write_table(f: &mut impl std::fmt::Write, opts: &Opts, header: &Rc<Vec<Doc>>,
 		},
 	);
 
-	write_row(f, &header_cells, &widths)?;
+	let row_sep = {
+		let mut s = String::from("+");
+		for width in &widths
+		{
+			s += &"-".repeat(width + 2);
+			s.push('+');
+		}
+		s.push('\n');
+		s
+	};
 
-	write!(f, "|")?;
-	for width in &widths
-	{
-		write!(f, "{1:-<0$}|", width + 2, "")?;
-	}
-	write!(f, "\n")?;
+	write!(f, "{}", row_sep)?;
+
+	write_row(f, &header_cells, &widths)?;
+	write!(f, "{}", row_sep.replace("-", "="))?;
 
 	for row in body_cells.iter()
 	{
 		write_row(f, &row, &widths)?;
+		write!(f, "{}", row_sep)?;
 	}
 
 	Ok(())
