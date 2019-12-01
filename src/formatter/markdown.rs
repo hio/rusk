@@ -31,7 +31,7 @@ impl Opts
 #[derive(Debug)]
 struct RenderingCell
 {
-	s: String,
+	lines: Vec<String>,
 	width: usize,
 }
 
@@ -165,8 +165,9 @@ impl RenderingCell
 	{
 		let mut s = String::new();
 		doc.encode(&mut s, opts).unwrap();
-		let width = text_width(&s);
-		RenderingCell { s, width }
+		let lines = s.split('\n').map(|s| s.into()).collect::<Vec<_>>();
+		let width = lines.iter().map(|s| text_width(s)).max().unwrap_or(0);
+		RenderingCell { lines, width }
 	}
 }
 
@@ -182,7 +183,7 @@ fn write_table(f: &mut impl std::fmt::Write, opts: &Opts, header: &Rc<Vec<Doc>>,
 		).collect::<Vec<_>>()
 	).collect::<Vec<_>>();
 
-	let widths = body_cells.iter().fold(
+	let widths:Vec<usize> = body_cells.iter().fold(
 		header_cells.iter().map(|cell| cell.width).collect::<Vec<_>>(),
 		|acc, row| {
 			acc.iter()
@@ -192,12 +193,7 @@ fn write_table(f: &mut impl std::fmt::Write, opts: &Opts, header: &Rc<Vec<Doc>>,
 		},
 	);
 
-	write!(f, "|")?;
-	for (i, cell) in header_cells.iter().enumerate()
-	{
-		write!(f, " {1:0$} |", widths[i], cell.s)?;
-	}
-	write!(f, "\n")?;
+	write_row(f, &header_cells, &widths)?;
 
 	write!(f, "|")?;
 	for width in &widths
@@ -208,13 +204,25 @@ fn write_table(f: &mut impl std::fmt::Write, opts: &Opts, header: &Rc<Vec<Doc>>,
 
 	for row in body_cells.iter()
 	{
+		write_row(f, &row, &widths)?;
+	}
+
+	Ok(())
+}
+
+
+fn write_row(f: &mut impl std::fmt::Write, row: &Vec<RenderingCell>, widths: &Vec<usize>) -> std::fmt::Result
+{
+	let height = row.iter().map(|cell| cell.lines.len()).max().unwrap_or(1);
+
+	for li in 0..height
+	{
 		write!(f, "|")?;
 		for (i, cell) in row.iter().enumerate()
 		{
-			write!(f, " {1:0$} |", widths[i], cell.s)?;
+			write!(f, " {1:0$} |", widths[i], cell.lines.get(li).unwrap_or(&String::new()))?;
 		}
 		write!(f, "\n")?;
 	}
-
 	Ok(())
 }
