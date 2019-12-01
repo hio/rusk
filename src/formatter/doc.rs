@@ -33,6 +33,11 @@ trait ToDoc
 	fn to_doc(&self) -> Doc;
 }
 
+trait ToDocRow
+{
+	fn to_doc_row(&self, i: usize) -> Rc<Vec<Doc>>;
+}
+
 pub trait ToDocWithTitle
 {
 	fn to_doc(&self, title: &String) -> Doc;
@@ -43,14 +48,9 @@ pub trait ToDocWithModule
 	fn to_doc(&self, _module: &ast::Module) -> Doc;
 }
 
-trait ToDocWithIndex
+trait ToDocRowsWithModule
 {
-	fn to_doc(&self, _index: usize) -> Doc;
-}
-
-trait ToDocWithIndexAndModule
-{
-	fn to_doc(&self, _index: usize, _module: &ast::Module) -> Doc;
+	fn to_doc_rows(&self, index: usize, module: &ast::Module) -> Rc<Vec<Doc>>;
 }
 
 trait ToDocIfHasOr
@@ -131,7 +131,7 @@ impl ToDocWithTitle for ast::Module
 						Doc::Fragment(Rc::new(items
 							.iter()
 							.enumerate()
-							.map(|(i, x)| x.to_doc(i + 1))
+							.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
 							.collect::<Vec<_>>()
 						)),
 						Doc::Static("\n"),
@@ -148,7 +148,7 @@ impl ToDocWithTitle for ast::Module
 						Doc::Fragment(Rc::new(items
 							.iter()
 							.enumerate()
-							.map(|(i, x)| x.to_doc(i + 1))
+							.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
 							.collect::<Vec<_>>()
 						)),
 						Doc::Static("\n"),
@@ -165,7 +165,7 @@ impl ToDocWithTitle for ast::Module
 						Doc::Fragment(Rc::new(self.vars()
 							.iter()
 							.enumerate()
-							.map(|(i, x)| x.to_doc(i + 1))
+							.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
 							.collect::<Vec<_>>()
 						)),
 						Doc::Static("\n"),
@@ -184,7 +184,7 @@ impl ToDocWithTitle for ast::Module
 							self.invariants()
 								.iter()
 								.enumerate()
-								.map(|(i, x)| x.to_doc(i + 1))
+								.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
 								.collect::<Vec<_>>()
 						)),
 					])),
@@ -217,11 +217,11 @@ impl HeaderRow for ast::TypeStmt
 }
 
 
-impl ToDocWithIndex for ast::TypeStmt
+impl ToDocRow for ast::TypeStmt
 {
-	fn to_doc(&self, i: usize) -> Doc
+	fn to_doc_row(&self, i: usize) -> Rc<Vec<Doc>>
 	{
-		Doc::Row(Rc::new(vec![
+		Rc::new(vec![
 			// | {i} |
 			Doc::Number(i),
 			// | {name}{args} |
@@ -238,7 +238,7 @@ impl ToDocWithIndex for ast::TypeStmt
 			},
 			// | {desc} |
 			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::String(Rc::new(desc.clone()))))),
-		]))
+		])
 	}
 }
 
@@ -335,11 +335,11 @@ impl HeaderRow for ast::Event
 }
 
 
-impl ToDocWithIndex for ast::EventItem
+impl ToDocRow for ast::EventItem
 {
-	fn to_doc(&self, i: usize) -> Doc
+	fn to_doc_row(&self, i: usize) -> Rc<Vec<Doc>>
 	{
-		Doc::Row(Rc::new(vec![
+		Rc::new(vec![
 			// | {i} |
 			Doc::Number(i),
 			// | {name}{args} |
@@ -348,7 +348,7 @@ impl ToDocWithIndex for ast::EventItem
 			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::String(Rc::new(summ.clone()))),
 			// | {desc} |
 			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::String(Rc::new(desc.clone()))))),
-		]))
+		])
 	}
 }
 
@@ -409,7 +409,7 @@ impl ToDocWithModule for ast::State
 							vars
 								.iter()
 								.enumerate()
-								.map(|(i, x)| x.to_doc(i + 1))
+								.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
 								.collect::<Vec<_>>(),
 						)),
 					])),
@@ -427,7 +427,7 @@ impl ToDocWithModule for ast::State
 						Doc::Fragment(Rc::new(vec
 							.iter()
 							.enumerate()
-							.map(|(i, x)| x.to_doc(i + 1))
+							.map(|(i, x)| Doc::Row(x.to_doc_row(i + 1)))
 							.collect::<Vec<_>>())),
 					])),
 				"No invariants.\n"
@@ -445,7 +445,7 @@ impl ToDocWithModule for ast::State
 							transitions
 								.iter()
 								.enumerate()
-								.map(|(i, x)| x.to_doc(i + 1, module))
+								.map(|(i, x)| Doc::Fragment(x.to_doc_rows(i + 1, module)))
 								.collect::<Vec<_>>(),
 						)),
 					])),
@@ -472,11 +472,11 @@ impl HeaderRow for ast::VarField
 }
 
 
-impl ToDocWithIndex for ast::VarField
+impl ToDocRow for ast::VarField
 {
-	fn to_doc(&self, i: usize) -> Doc
+	fn to_doc_row(&self, i: usize) -> Rc<Vec<Doc>>
 	{
-		Doc::Row(Rc::new(vec![
+		Rc::new(vec![
 			// | {i} |
 			Doc::Number(i),
 			// | {name} |
@@ -489,7 +489,7 @@ impl ToDocWithIndex for ast::VarField
 			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::String(Rc::new(summ.clone()))),
 			// | {desc} |
 			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |summ| Doc::String(Rc::new(summ.clone()))))),
-		]))
+		])
 	}
 }
 
@@ -509,11 +509,11 @@ impl HeaderRow for ast::InvariantField
 }
 
 
-impl ToDocWithIndex for ast::InvariantField
+impl ToDocRow for ast::InvariantField
 {
-	fn to_doc(&self, i: usize) -> Doc
+	fn to_doc_row(&self, i: usize) -> Rc<Vec<Doc>>
 	{
-		Doc::Row(Rc::new(vec![
+		Rc::new(vec![
 			// | {i} |
 			Doc::Number(i),
 			// | {name} |
@@ -543,7 +543,7 @@ impl ToDocWithIndex for ast::InvariantField
 						Doc::String(Rc::new(desc.clone()))
 					))
 				),
-		]))
+		])
 	}
 }
 
@@ -566,24 +566,24 @@ impl HeaderRow for ast::TransitionField
 	}
 }
 
-impl ToDocWithIndexAndModule for ast::TransitionField
+impl ToDocRowsWithModule for ast::TransitionField
 {
-	fn to_doc(&self, i: usize, module: &ast::Module) -> Doc
+	fn to_doc_rows(&self, i: usize, module: &ast::Module) -> Rc<Vec<Doc>>
 	{
-		Doc::Fragment(Rc::new(
+		Rc::new(
 			self.posts()
 				.iter()
 				.enumerate()
-				.map(|(j, post)| transition_row(self, i, module, j, post))
+				.map(|(j, post)| Doc::Row(transition_row(self, i, module, j, post)))
 				.collect::<Vec<_>>()
-		))
+		)
 	}
 }
 
-fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: usize, post: &ast::PostCond) -> Doc
+fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: usize, post: &ast::PostCond) -> Rc<Vec<Doc>>
 {
 	let first = j == 0;
-	Doc::Row(Rc::new(vec![
+	Rc::new(vec![
 		// | {i} |
 		if first { Doc::Number(i) } else { Doc::Empty },
 		// | {name}{args} |
@@ -669,7 +669,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		{
 			Doc::Empty
 		},
-	]))
+	])
 }
 
 
@@ -754,11 +754,11 @@ impl HeaderRow for ast::VarStmt
 	}
 }
 
-impl ToDocWithIndex for ast::VarStmt
+impl ToDocRow for ast::VarStmt
 {
-	fn to_doc(&self, i: usize) -> Doc
+	fn to_doc_row(&self, i: usize) -> Rc<Vec<Doc>>
 	{
-		Doc::Row(Rc::new(vec![
+		Rc::new(vec![
 			// | {i} |
 			Doc::Number(i),
 			// | {var_type} {name} |
@@ -774,7 +774,7 @@ impl ToDocWithIndex for ast::VarStmt
 			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::String(Rc::new(summ.clone()))),
 			// | {desc} |
 			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| Doc::String(Rc::new(desc.clone()))))),
-		]))
+		])
 	}
 }
 
