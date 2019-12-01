@@ -1063,6 +1063,15 @@ impl Tokenizer
 
 	fn at(&mut self) -> Result<(), Error>
 	{
+		while let Some(ch) = self.input.get(self.ix)
+		{
+			if !ch.is_whitespace()
+			{
+				break;
+			}
+			self.ix += 1;
+		}
+
 		let ch1 = self.next();
 		if ch1 == Some('(')
 		{

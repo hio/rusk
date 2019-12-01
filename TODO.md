@@ -11,7 +11,6 @@ title: TODO
 
 ### Misc
 
-- RF-139: allow space chars between @ and {- -}
 - TD-149: given keyword rather than an identifier.
 - TD-103: module description.
 - TD-105: fn definition: fn f (arg) ...: t = body;
@@ -81,6 +80,7 @@ blocked/blocks:
 ## Done
 
 - (newer)
+- RF-139: allow space chars between @ and {- -}
 - TD-162: Doc::PlainText, MarkedText
 - TD-134: Doc encode option/no line-feed in table cell.
 - TD-163: RenderingBox

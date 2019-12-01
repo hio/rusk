@@ -261,6 +261,7 @@ fn test_type()
 	test_parse("type x@(summary) = { f1: T1 };");
 	test_parse("type x = { f1: T1 }@{-description-};");
 	test_parse("type x@(summary) = { f1: T1 }@{-description-};");
+	test_parse("type x @ (summary) = { f1: T1 } @ {-description-};");
 
 	test_parse("type x = { f1: T1 @{- desc -}, };");
 	test_parse("type x = { f1: T1, @// desc\n};");
