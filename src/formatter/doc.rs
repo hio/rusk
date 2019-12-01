@@ -398,24 +398,24 @@ impl ToDocWithModule for ast::State
 					None => Doc::Empty,
 				},
 			])))),
-			Doc::Static("\n"),
 
 			// description.
 			match self.description() {
 				Some(desc) =>
 					Doc::Fragment(Rc::new(vec![
-						Doc::Marked(Rc::new((*desc).as_ref().clone())),
 						Doc::Static("\n"),
+						Doc::Marked(Rc::new((*desc).as_ref().clone())),
 					])),
 				None => Doc::Empty,
 			},
 
-			Doc::Heading(3, Rc::new(Doc::Static("Variables"))),
-			Doc::Static("\n"),
 			if_has_field_or_(
 				self.fields(),
 				|field| field.get_var(),
 				|vars| Doc::Fragment(Rc::new(vec![
+						Doc::Static("\n"),
+						Doc::Heading(3, Rc::new(Doc::Static("Variables"))),
+						Doc::Static("\n"),
 						Doc::Table(
 							ast::VarField::header_row(),
 							Rc::new(
@@ -427,16 +427,16 @@ impl ToDocWithModule for ast::State
 							),
 						),
 					])),
-				"No variables.\n"
+				"",
 			),
-			Doc::Static("\n"),
 
-			Doc::Heading(3, Rc::new(Doc::Static("Invariants"))),
-			Doc::Static("\n"),
 			if_has_field_or_(
 				self.fields(),
 				|field| field.get_invariant(),
 				|vec| Doc::Fragment(Rc::new(vec![
+						Doc::Static("\n"),
+						Doc::Heading(3, Rc::new(Doc::Static("Invariants"))),
+						Doc::Static("\n"),
 						Doc::Table(
 							ast::InvariantField::header_row(),
 							Rc::new(vec
@@ -446,16 +446,16 @@ impl ToDocWithModule for ast::State
 								.collect::<Vec<_>>()),
 						),
 					])),
-				"No invariants.\n"
+				"",
 			),
-			Doc::Static("\n"),
 
-			Doc::Heading(3, Rc::new(Doc::Static("Transitions"))),
-			Doc::Static("\n"),
 			if_has_field_or_(
 				self.fields(),
 				|field| field.get_transition(),
 				|transitions| Doc::Fragment(Rc::new(vec![
+						Doc::Static("\n"),
+						Doc::Heading(3, Rc::new(Doc::Static("Transitions"))),
+						Doc::Static("\n"),
 						Doc::Table(
 							ast::TransitionField::header_row(),
 							Rc::new(
@@ -468,7 +468,7 @@ impl ToDocWithModule for ast::State
 							),
 						),
 					])),
-				"No transitions.\n"
+				"",
 			),
 		]))
 	}
