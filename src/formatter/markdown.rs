@@ -1,11 +1,13 @@
 //! # Markdown formatter
 use crate::formatter::doc::{ Doc };
 
+
 pub trait ToMarkdownText
 {
 	fn to_markdown_text(&self) -> String;
 	fn encode(&self, f: &mut impl std::fmt::Write) -> std::fmt::Result;
 }
+
 
 impl ToMarkdownText for Doc
 {
@@ -109,36 +111,38 @@ impl ToMarkdownText for Doc
 	}
 }
 
-	fn sep_end_by(f: &mut impl std::fmt::Write, sep: &Doc, end: &Doc, v: &Vec<Doc>) -> std::fmt::Result
-	{
-		let mut iter = v.iter();
-		match iter.next()
-		{
-			None => (),
-			Some(ref first) => {
-				first.encode(f)?;
-				for item in iter
-				{
-					sep.encode(f)?;
-					item.encode(f)?;
-				}
-				()
-			},
-		}
-		end.encode(f)
-	}
 
-	fn escape(f: &mut impl std::fmt::Write, s: &String) -> std::fmt::Result
+fn sep_end_by(f: &mut impl std::fmt::Write, sep: &Doc, end: &Doc, v: &Vec<Doc>) -> std::fmt::Result
+{
+	let mut iter = v.iter();
+	match iter.next()
 	{
-		let mut iter = s.chars();
-		while let Some(ch) = iter.next()
-		{
-			match ch
+		None => (),
+		Some(ref first) => {
+			first.encode(f)?;
+			for item in iter
 			{
-				'\\' => write!(f, "\\\\")?,
-				'_' => write!(f, "\\{}", ch)?,
-				ch => write!(f, "{}", ch)?,
+				sep.encode(f)?;
+				item.encode(f)?;
 			}
-		}
-		Ok(())
+			()
+		},
 	}
+	end.encode(f)
+}
+
+
+fn escape(f: &mut impl std::fmt::Write, s: &String) -> std::fmt::Result
+{
+	let mut iter = s.chars();
+	while let Some(ch) = iter.next()
+	{
+		match ch
+		{
+			'\\' => write!(f, "\\\\")?,
+			'_' => write!(f, "\\{}", ch)?,
+			ch => write!(f, "{}", ch)?,
+		}
+	}
+	Ok(())
+}
