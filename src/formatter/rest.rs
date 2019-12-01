@@ -1,11 +1,13 @@
 //! # ReST formatter
 use crate::formatter::doc::{ Doc };
 
+
 pub trait ToRestText
 {
 	fn to_rest_text(&self) -> String;
 	fn encode(&self, f: &mut impl std::fmt::Write) -> std::fmt::Result;
 }
+
 
 impl ToRestText for Doc
 {
@@ -142,6 +144,7 @@ impl ToRestText for Doc
 	}
 }
 
+
 fn text_width(s: &String) -> usize
 {
 	// lazy calculation.
@@ -150,36 +153,37 @@ fn text_width(s: &String) -> usize
 }
 
 
-	fn sep_end_by(f: &mut impl std::fmt::Write, sep: &Doc, end: &Doc, v: &Vec<Doc>) -> std::fmt::Result
+fn sep_end_by(f: &mut impl std::fmt::Write, sep: &Doc, end: &Doc, v: &Vec<Doc>) -> std::fmt::Result
+{
+	let mut iter = v.iter();
+	match iter.next()
 	{
-		let mut iter = v.iter();
-		match iter.next()
-		{
-			None => (),
-			Some(ref first) => {
-				first.encode(f)?;
-				for item in iter
-				{
-					sep.encode(f)?;
-					item.encode(f)?;
-				}
-				()
-			},
-		}
-		end.encode(f)
-	}
-
-	fn escape(f: &mut impl std::fmt::Write, s: &String) -> std::fmt::Result
-	{
-		let mut iter = s.chars();
-		while let Some(ch) = iter.next()
-		{
-			match ch
+		None => (),
+		Some(ref first) => {
+			first.encode(f)?;
+			for item in iter
 			{
-				'\\' => write!(f, "\\\\")?,
-				'_' => write!(f, "\\{}", ch)?,
-				ch => write!(f, "{}", ch)?,
+				sep.encode(f)?;
+				item.encode(f)?;
 			}
-		}
-		Ok(())
+			()
+		},
 	}
+	end.encode(f)
+}
+
+
+fn escape(f: &mut impl std::fmt::Write, s: &String) -> std::fmt::Result
+{
+	let mut iter = s.chars();
+	while let Some(ch) = iter.next()
+	{
+		match ch
+		{
+			'\\' => write!(f, "\\\\")?,
+			'_' => write!(f, "\\{}", ch)?,
+			ch => write!(f, "{}", ch)?,
+		}
+	}
+	Ok(())
+}
