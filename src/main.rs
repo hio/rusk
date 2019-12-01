@@ -36,6 +36,8 @@ enum Formatter
 	Rest,
 	Json,
 	JsonPretty,
+	DocJson,
+	DocJsonPretty,
 	//Html,
 	//Dot,
 	//Rest,
@@ -121,6 +123,20 @@ fn run(opts: &Opts, input: String) -> std::io::Result<()>
 					}
 					println!("{}", module.to_json_text_pretty()?);
 				},
+				Formatter::DocJson => {
+					if opts.debug
+					{
+						println!("--[doc-json]----");
+					}
+					println!("{}", module.as_ref().to_doc(&opts.title).to_json_text()?);
+				},
+				Formatter::DocJsonPretty => {
+					if opts.debug
+					{
+						println!("--[doc-json-pretty]----");
+					}
+					println!("{}", module.as_ref().to_doc(&opts.title).to_json_text_pretty()?);
+				},
 			}
 		}
 		Err((source_map, err)) => {
@@ -203,6 +219,14 @@ fn main() -> std::io::Result<()>
 		},
 		"--json-pretty" => {
 			opts.formatter = Formatter::JsonPretty;
+			args.next();
+		},
+		"--doc-json" => {
+			opts.formatter = Formatter::DocJson;
+			args.next();
+		},
+		"--doc-json-pretty" => {
+			opts.formatter = Formatter::DocJsonPretty;
 			args.next();
 		},
 		_ => (),

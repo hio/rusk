@@ -1,8 +1,13 @@
 use std::rc::Rc;
 use crate::ast;
+use serde::{Serialize, Deserialize};
 
 
-#[derive(Clone, Debug)]
+// TODO: write reason for using rc rather than box.
+// serialize/deserialize rc with "--features rc" makes shared
+// objects unshared.
+// https://serde.rs/feature-flags.html#-features-rc
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Doc
 {
 	Empty,
@@ -61,6 +66,20 @@ trait HeaderRow
 trait IsTransition
 {
 	fn is_transition(&self) -> bool;
+}
+
+
+impl crate::formatter::json::ToJsonText for Doc
+{
+	fn to_json_text(&self) -> serde_json::Result<String>
+	{
+		serde_json::to_string(self)
+	}
+
+	fn to_json_text_pretty(&self) -> serde_json::Result<String>
+	{
+		serde_json::to_string_pretty(self)
+	}
 }
 
 
