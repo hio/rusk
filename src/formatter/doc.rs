@@ -1251,3 +1251,11 @@ impl ToDoc for ast::FnExpr
 		].concat()))
 	}
 }
+
+
+pub fn text_width(s: &String) -> usize
+{
+	// lazy calculation.
+	// consider UAX #11: East Asian Width.
+	s.chars().map(|c| if c < '\u{0100}' { 1 } else { 2 } ).sum()
+}

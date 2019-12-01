@@ -1,5 +1,5 @@
 //! # ReST formatter
-use crate::formatter::doc::{ Doc };
+use crate::formatter::doc::{ Doc, text_width };
 
 
 struct Opts
@@ -163,14 +163,6 @@ impl WriteRestText for Doc
 			},
 		}
 	}
-}
-
-
-fn text_width(s: &String) -> usize
-{
-	// lazy calculation.
-	// consider UAX #11: East Asian Width.
-	s.chars().map(|c| if c < '\u{0100}' { 1 } else { 2 } ).sum()
 }
 
 
