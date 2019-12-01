@@ -93,7 +93,8 @@ impl WriteRestText for Doc
 				Ok(())
 			},
 			Doc::Number(n) => write!(f, "{}", n),
-			Doc::String(ref s) => escape(f, s, opts, false),
+			Doc::Plain(ref s) => escape(f, s, opts, false),
+			Doc::Marked(ref s) => escape(f, s, opts, false),
 			Doc::Static(ref s) => escape(f, s, opts, true),
 			Doc::Br => write!(f, "<br />"),
 			Doc::Code(ref node) => {

@@ -85,7 +85,8 @@ impl WriteMarkdownText for Doc
 				Ok(())
 			},
 			Doc::Number(n) => write!(f, "{}", n),
-			Doc::String(ref s) => escape(f, s, opts),
+			Doc::Plain(ref s) => escape(f, s, opts),
+			Doc::Marked(ref s) => write!(f, "{}", s),
 			Doc::Static(ref s) => write!(f, "{}", s),
 			Doc::Br => write!(f, "<br />"),
 			Doc::Code(ref node) => {

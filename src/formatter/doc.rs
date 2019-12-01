@@ -15,7 +15,8 @@ pub enum Doc
 	Heading(usize, Rc<Doc>),
 	Fragment(Rc<Vec<Doc>>),
 	Number(usize),
-	String(Rc<String>),
+	Plain(Rc<String>),
+	Marked(Rc<String>),
 	Static(&'static str),
 	Br,
 	Code(Rc<Doc>),
@@ -229,7 +230,7 @@ impl ToDocRow for ast::TypeStmt
 			// | {name}{args} |
 			name_args_to_doc(self.name(), self.args()),
 			// | {summary} |
-			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::String(Rc::new(summ.clone()))),
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))),
 			// | {definition} |
 			if self.items().len() == 1
 			{
@@ -248,7 +249,7 @@ impl ToDocRow for ast::TypeStmt
 				)))
 			},
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::String(Rc::new(desc.clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.clone()))))),
 		])
 	}
 }
@@ -274,7 +275,7 @@ impl ToDoc for ast::DataDef
 	fn to_doc(&self) -> Doc
 	{
 		Doc::SepBy(" ", Rc::new(vec![
-			vec![ Doc::String(Rc::new(self.name().clone())) ],
+			vec![ Doc::Plain(Rc::new(self.name().clone())) ],
 			self.args().args().iter().map(|arg| arg.to_doc()).collect::<Vec<_>>(),
 		].concat()))
 	}
@@ -286,7 +287,7 @@ impl ToDoc for ast::RecordDef
 	fn to_doc(&self) -> Doc
 	{
 		Doc::Fragment(Rc::new(vec![
-			self.name().as_ref().map_or(Doc::Empty, |name| Doc::String(Rc::new(*name.clone() + " "))),
+			self.name().as_ref().map_or(Doc::Empty, |name| Doc::Plain(Rc::new(*name.clone() + " "))),
 			self.fields().to_doc()
 		]))
 	}
@@ -318,7 +319,7 @@ fn to_summary_doc(summ: &String) -> Doc
 {
 	Doc::Fragment(Rc::new(vec![
 		Doc::Static(" @( "),
-		Doc::String(Rc::new(summ.clone())),
+		Doc::Marked(Rc::new(summ.clone())),
 		Doc::Static(" )"),
 	]))
 }
@@ -327,7 +328,7 @@ fn to_description_doc(desc: &String) -> Doc
 {
 	Doc::Fragment(Rc::new(vec![
 		Doc::Static(" @{- "),
-		Doc::String(Rc::new(desc.clone())),
+		Doc::Marked(Rc::new(desc.clone())),
 		Doc::Static(" -}"),
 	]))
 }
@@ -356,9 +357,9 @@ impl ToDocRow for ast::EventItem
 			// | {name}{args} |
 			name_args_to_doc(self.name(), self.args()),
 			// | {summary} |
-			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::String(Rc::new(summ.clone()))),
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))),
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::String(Rc::new(desc.clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.clone()))))),
 		])
 	}
 }
@@ -370,7 +371,7 @@ impl ToDoc for ast::DottedName
 	{
 		Doc::SepBy(".", Rc::new(
 			self.names().iter().map(|name|
-				Doc::String(Rc::new(name.clone()))
+				Doc::Plain(Rc::new(name.clone()))
 			).collect::<Vec<_>>()
 		))
 	}
@@ -392,7 +393,7 @@ impl ToDocWithModule for ast::State
 				match self.summary() {
 					Some(summ) => Doc::Fragment(Rc::new(vec![
 						Doc::Static(" @ "),
-						Doc::String((summ as &String).clone().into()),
+						Doc::Marked((summ as &String).clone().into()),
 					])),
 					None => Doc::Empty,
 				},
@@ -403,7 +404,7 @@ impl ToDocWithModule for ast::State
 			match self.description() {
 				Some(desc) =>
 					Doc::Fragment(Rc::new(vec![
-						Doc::String(Rc::new((*desc).as_ref().clone())),
+						Doc::Marked(Rc::new((*desc).as_ref().clone())),
 						Doc::Static("\n"),
 					])),
 				None => Doc::Empty,
@@ -504,9 +505,9 @@ impl ToDocRow for ast::VarField
 			// | `{init}` |
 			self.init().as_ref().map_or(Doc::Empty, |init| Doc::Code(Rc::new(init.to_doc()))),
 			// | {summary} |
-			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::String(Rc::new(summ.clone()))),
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))),
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |summ| Doc::String(Rc::new(summ.clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))))),
 		])
 	}
 }
@@ -535,9 +536,9 @@ impl ToDocRow for ast::InvariantField
 			// | {i} |
 			Doc::Number(i),
 			// | {name} |
-			self.name().as_ref().map_or(Doc::Empty, |name| Doc::String(Rc::new(name.clone()))),
+			self.name().as_ref().map_or(Doc::Empty, |name| Doc::Plain(Rc::new(name.clone()))),
 			// | {summary} |
-			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::String(Rc::new(summ.clone()))),
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))),
 			// | {exprs} |
 			Doc::SepByDoc(
 				Rc::new(Doc::Br),
@@ -558,7 +559,7 @@ impl ToDocRow for ast::InvariantField
 				.map_or(
 					Doc::Empty,
 					|desc| Doc::Cell(Rc::new(
-						Doc::String(Rc::new(desc.clone()))
+						Doc::Marked(Rc::new(desc.clone()))
 					))
 				),
 		])
@@ -608,7 +609,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		if first {
 			module.get_event_summary(me.name())
 				.map_or(Doc::Empty, |summ|
-					Doc::String(Rc::new(summ.clone()))
+					Doc::Marked(Rc::new(summ.clone()))
 				)
 		}else
 		{
@@ -631,7 +632,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 					Doc::Empty,
 					|guard| (*guard.1).as_ref().map_or(
 						Doc::Empty,
-						|desc| Doc::Cell(Rc::new(Doc::String(Rc::new(desc.clone())))),
+						|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.clone())))),
 					),
 				),
 			))
@@ -643,7 +644,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		Doc::SepBy(
 			", ",
 			Rc::new(post.targets().iter()
-				.map(|target| Doc::String(Rc::new(target.clone())))
+				.map(|target| Doc::Plain(Rc::new(target.clone())))
 				.collect::<Vec<_>>()),
 		),
 		// | {post_expr} |
@@ -673,13 +674,13 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		// | {post_desc} |
 		post.description().as_ref().map_or(
 			Doc::Empty,
-			|desc| Doc::Cell(Rc::new(Doc::String(Rc::new(desc.clone())))),
+			|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.clone())))),
 		),
 		// | {desc} |
 		if first {
 			me.description().as_ref().map_or(
 				Doc::Empty,
-				|desc| Doc::Cell(Rc::new(Doc::String(Rc::new(desc.clone())))),
+				|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.clone())))),
 			)
 		}else
 		{
@@ -787,9 +788,9 @@ impl ToDocRow for ast::VarStmt
 			// | `{init}` |
 			self.init().as_ref().map_or(Doc::Empty, |init| Doc::Code(Rc::new(init.to_doc()))),
 			// | {summary} |
-			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::String(Rc::new(summ.clone()))),
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))),
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| Doc::String(Rc::new(desc.clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.clone()))))),
 		])
 	}
 }
@@ -944,7 +945,7 @@ impl ToDoc for ast::CmpExpr
 	{
 		Doc::SepBy(" ", Rc::new(vec![
 			self.lhs().to_doc(),
-			Doc::String(Rc::new( self.op().clone() )),
+			Doc::Plain(Rc::new( self.op().clone() )),
 			self.rhs().to_doc(),
 		]))
 	}
@@ -965,7 +966,7 @@ impl ToDoc for ast::NameExpr
 {
 	fn to_doc(&self) -> Doc
 	{
-		Doc::String(Rc::new( self.name().clone() ))
+		Doc::Plain(Rc::new( self.name().clone() ))
 	}
 }
 
@@ -973,7 +974,7 @@ impl ToDoc for ast::NumExpr
 {
 	fn to_doc(&self) -> Doc
 	{
-		Doc::String(Rc::new( format!("{}", self.num()) ))
+		Doc::Plain(Rc::new( format!("{}", self.num()) ))
 	}
 }
 
@@ -982,9 +983,9 @@ impl ToDoc for ast::StrExpr
 	fn to_doc(&self) -> Doc
 	{
 		Doc::Fragment(Rc::new(vec![
-			Doc::String(Rc::new(self.begin().clone())),
-			Doc::String(Rc::new(self.value().clone())),
-			Doc::String(Rc::new(self.end().clone())),
+			Doc::Plain(Rc::new(self.begin().clone())),
+			Doc::Plain(Rc::new(self.value().clone())),
+			Doc::Plain(Rc::new(self.end().clone())),
 		]))
 	}
 }
@@ -995,7 +996,7 @@ impl ToDoc for ast::BinOpExpr
 	{
 		Doc::SepBy(" ", Rc::new(vec![
 			self.lhs().to_doc(),
-			Doc::String(Rc::new( self.op().clone() )),
+			Doc::Plain(Rc::new( self.op().clone() )),
 			self.rhs().to_doc(),
 		]))
 	}
@@ -1186,7 +1187,7 @@ impl ToDoc for ast::RecordMutation
 				Doc::SepEndBy(", ", ",", Rc::new(self.mutations().iter().map(|m|
 					Doc::SepBy(" ", Rc::new(vec![
 						m.lhs().to_doc(),
-						Doc::String(Rc::new(m.op().clone())),
+						Doc::Plain(Rc::new(m.op().clone())),
 						m.rhs().to_doc(),
 					]))
 				).collect::<Vec<_>>())),

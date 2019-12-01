@@ -6,7 +6,6 @@ title: TODO
 
 ### Near Future
 
-- TD-162: Doc::PlainText, MarkedText
 - TD-150: list comprehension [x | elem <- collection] rather than [x | elem in collection].
 - TD-104: tau (arg) ... guard -\->
 
@@ -82,6 +81,7 @@ blocked/blocks:
 ## Done
 
 - (newer)
+- TD-162: Doc::PlainText, MarkedText
 - TD-134: Doc encode option/no line-feed in table cell.
 - TD-163: RenderingBox
 - TD-164: Doc::Table/formatted width
