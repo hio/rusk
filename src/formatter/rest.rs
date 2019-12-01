@@ -85,8 +85,8 @@ impl WriteRestText for Doc
 				Ok(())
 			},
 			Doc::Number(n) => write!(f, "{}", n),
-			Doc::String(ref s) => escape(f, s, opts),
-			Doc::Static(ref s) => write!(f, "{}", s),
+			Doc::String(ref s) => escape(f, s, opts, false),
+			Doc::Static(ref s) => escape(f, s, opts, true),
 			Doc::Br => write!(f, "<br />"),
 			Doc::Code(ref node) => {
 				write!(f, "``")?;
@@ -186,7 +186,7 @@ fn sep_end_by(f: &mut impl std::fmt::Write, sep: &Doc, end: &Doc, v: &Vec<Doc>, 
 }
 
 
-fn escape(f: &mut impl std::fmt::Write, s: &String, opts: &Opts) -> std::fmt::Result
+fn escape(f: &mut impl std::fmt::Write, s: &str, opts: &Opts, is_static: bool) -> std::fmt::Result
 {
 	if opts.in_code
 	{
@@ -199,7 +199,8 @@ fn escape(f: &mut impl std::fmt::Write, s: &String, opts: &Opts) -> std::fmt::Re
 			match ch
 			{
 				'_' => write!(f, "\\_")?,
-				'\n' => write!(f, "<br />")?,
+				'|' => write!(f, "\\|")?,
+				'\n' if !is_static => write!(f, "<br />")?,
 				ch => write!(f, "{}", ch)?,
 			}
 		}
