@@ -6,7 +6,7 @@ title: TODO
 
 ### Near Future
 
-- TD-129: Doc::Table
+- TD-162: Doc::PlainText, MarkedText
 - TD-150: list comprehension [x | elem <- collection] rather than [x | elem in collection].
 - TD-104: tau (arg) ... guard -\->
 
@@ -35,7 +35,6 @@ title: TODO
 - TD-125: case x|arm... rather than match x{arm...}
 - TD-127: unicode block, mathematical operators
 - TD-128: ReST formatter
-- TD-134: Doc encode option/no line-feed in table cell.
 - TD-135: Doc encode option/never twice same decoration.
 - TD-137: parse markdown in description.
 - TD-138: set serde attributes for json formatter.
@@ -83,6 +82,10 @@ blocked/blocks:
 ## Done
 
 - (newer)
+- TD-134: Doc encode option/no line-feed in table cell.
+- TD-163: RenderingBox
+- TD-164: Doc::Table/formatted width
+- TD-129: Doc::Table/introduce
 - TD-132: Doc encode option/introduce.
 - TD-133: Doc encode option/no backslash escape in code.
 - TD-130: text width
