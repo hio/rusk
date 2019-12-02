@@ -6,6 +6,9 @@ title: TODO
 
 ### Near Future
 
+- TD-107: when cond\_1 @[- desc 1 -], cond\_2 @[- desc 2 -], --> { ... }
+- TD-136: remove indentation in description.
+- TD-114: nested anon record def.
 - TD-104: tau (arg) ... guard -\->
 
 ### Misc
@@ -13,7 +16,6 @@ title: TODO
 - TD-149: given keyword rather than an identifier.
 - TD-103: module description.
 - TD-105: fn definition: fn f (arg) ...: t = body;
-- TD-107: when a @[- desc -], b @[- desc -, --> { ... }
 - TD-126: allow single paren in @(- -)
 - RF-122: drop escapes by (( and ))
 - TD-161: split up KwOper `in`.
@@ -21,8 +23,7 @@ title: TODO
 
 ### Backlog
 
-- TD-136: remove indentation in description.
-- TD-114: nested anon record def.
+- TD-128: ReST formatter
 - RF-116: sort scanner::KeywordKind by alphabetical
 - RF-117: sort scanner::PunctuationKind by alphabetical
 - RF-118: sort scanner::OperatorKind by alphabetical
@@ -31,7 +32,6 @@ title: TODO
 - TD-124: if/then/else rather than if cond {} else {}
 - TD-125: case x|arm... rather than match x{arm...}
 - TD-127: unicode block, mathematical operators
-- TD-128: ReST formatter
 - TD-135: Doc encode option/never twice same decoration.
 - TD-137: parse markdown in description.
 - TD-138: set serde attributes for json formatter.
@@ -47,6 +47,8 @@ title: TODO
 - TD-152: rename summary to alias.
 - RF-153: simplify rs code { x:x, } into just { x, }
 - TD-154: binary operator for CSP sequencial composition alternative of `[]`.
+- TD-165: move comm ops to lowest prec.
+- TD-166: split up doc/lib.md into each types.
 
 blocked/blocks:
 
