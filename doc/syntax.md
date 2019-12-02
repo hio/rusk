@@ -9,25 +9,31 @@ line-comment ::= "//" <free-text except '\n'> ;;
 block-comment ::= "/*" <free-text> "*/" ;;
 
 
-module ::= event state* ;;
+module ::= (event-stmt | type-stmt | var-stmt | const-stmt
+            | invariant-stmt | state-stmt)* ;;
 
-event ::= "event" (event-item <sep-end-by ",">)* ";" ;;
+event-stmt ::= "event" (event-item <sep-end-by ",">)* ";" ;;
 event-item ::= event-name at-alias arg-list? ;;
 event-name ::= <dotted-name> ;;
 
-state ::= "state" state-name at-alias arg-list?
-            "{" state-element* "}" ;;
+type-stmt ::= not-documented-yet ;;
+
+var-stmt ::= not-documented-yet ;;
+
+state-stmt ::= "state" state-name at-alias arg-list?
+                "{" state-element* "}" ;;
 state-name ::= <dotted-name> ;;
-state-element ::= var | invariant | transition ;;
+state-element ::= var-stmt | invariant-stmt | transition-stmt ;;
 
-var ::= "var" <identifier> ":" type-expr "=" expr ";" ;;
+var-stmt ::= "var" <identifier> ":" type-expr "=" expr ";" ;;
+const-stmt ::= "const" <identifier> ":" type-expr "=" expr ";" ;;
 
-invariant ::=
+invariant-stmt ::=
   "invariant" "{"
     ( cond-expr ";")+
   "}" at-stmt-description ;;
 
-transition ::=
+transition-stmt ::=
   "transition" event-name arg-list?
   ("when" cond-expr at-phrase-description)?
   "-->" "{"
@@ -43,10 +49,13 @@ post-cond ::=
 
 target-name ::= <identifier> | "state" ;;
 result-name ::= <identifier followed by "'"> | "state'" ;;
-// result-name can be used at cond-expr in post-ocnd.
+// result-name can be used at cond-expr in post-cond.
 
-arg-list ::= "(" (arg <sep-end-by ",">)+ ")" ;;
-arg ::= <identifier> ":" type-expr ;;
+arg-list ::= arg <sep-end-by ",">+ ;;
+arg ::= <identifier>
+      | "(" expr ")"
+      | "(" expr ":" type-expr ")"
+    ;;
 
 at-alias ::= "@" "(" <free-text> ")"
            | "@" "(-" <free-text> "-)"
@@ -70,7 +79,9 @@ if-expr ::=
   ;;
 
 let-expr ::=
-  "let" (<identifier> "=" <expr exclude "in" binary operator> <sep-end-by ",">)+ "in" expr ;;
+  "let"
+  (<identifier> "=" <expr exclude "in" binary operator> <sep-end-by ",">)+
+  "in" expr ;;
 
 <dq-string> ::= "\"" <free-text> "\"" ;;
 <dotted-name> ::= (<identifier> <sep-by ".">)+ ;;
@@ -86,6 +97,7 @@ let-expr ::=
     * paren: "(" expr ")"
     * list literal: "\[" ... "]"
     * set literal: "__set" "{" ... "}"
+    * map literal: "__map" "{" ... "}"
     * channel set: "{|" expr "|}"
     * target event set: "|[" expr "]|"
     * compound expr \
@@ -128,22 +140,23 @@ let-expr ::=
     * no assoc: expr ">" expr
     * no assoc: expr ">=" expr
     * no assoc: expr "in" expr
-12. communication
-    * receive a messsage, no assoc: chan "?" expr
-    * send a messsage, no assoc: chan "!" expr
-    * CSP prefix operation, left assoc: event "->" process
-    * chan ::= expr;;
-    * event ::= expr;;
-    * process ::= expr;;
-13. material conditional
+12. material conditional
     * left assoc: cond-expr "=>" cond-expr
-14. logical conjunction
+13. logical conjunction
     * left assoc: cond-expr "&&" cond-expr
-15. logical disjunction
+14. logical disjunction
     * left assoc: cond-expr "||" cond-expr
-16. pipe (lowest precedence)
+15. pipe
     * left assoc: expr "|>" expr
     * f a |> g b == g b (f a)
+16. channel communication
+    * receive a messsage, no assoc: chan "?" expr
+    * send a messsage, no assoc: chan "!" expr
+    * chan ::= expr ;;
+17. process communication (lowest precedence)
+    * CSP prefix operation, left assoc: event "->" process
+    * event ::= expr ;;
+    * process ::= expr ;;
 
 
 ## Literals
