@@ -509,7 +509,7 @@ pub struct TransitionField
 {
 	name: Box<DottedName>,
 	args: Box<ArgList>,
-	guard: Option<Box<GuardExpr>>,
+	guards: Box<Vec<Box<GuardExpr>>>,
 	posts: Box<Vec<Box<PostCond>>>,
 	desc: Box<Option<String>>,
 }
@@ -517,12 +517,12 @@ pub struct TransitionField
 
 impl TransitionField
 {
-	pub fn new_boxed(name: Box<DottedName>, args: Box<ArgList>, guard: Option<Box<GuardExpr>>, posts: Box<Vec<Box<PostCond>>>, desc: Box<Option<String>>) -> Box<TransitionField>
+	pub fn new_boxed(name: Box<DottedName>, args: Box<ArgList>, guards: Box<Vec<Box<GuardExpr>>>, posts: Box<Vec<Box<PostCond>>>, desc: Box<Option<String>>) -> Box<TransitionField>
 	{
 		Box::new(TransitionField {
 			name,
 			args,
-			guard,
+			guards,
 			posts,
 			desc,
 		})
@@ -538,9 +538,9 @@ impl TransitionField
 		&self.args
 	}
 
-	pub fn guard(&self) -> &Option<Box<GuardExpr>>
+	pub fn guards(&self) -> &Vec<Box<GuardExpr>>
 	{
-		&self.guard
+		&self.guards
 	}
 
 	pub fn posts(&self) -> &Vec<Box<PostCond>>

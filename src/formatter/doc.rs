@@ -589,15 +589,17 @@ impl ToDocRowsWithModule for ast::TransitionField
 {
 	fn to_doc_rows(&self, i: usize, module: &ast::Module) -> Vec<Rc<Vec<Doc>>>
 	{
-		self.posts()
-			.iter()
-			.enumerate()
-			.map(|(j, post)| transition_row(self, i, module, j, post))
-			.collect::<Vec<_>>()
+		let len = self.guards().len().max(self.posts().len());
+
+		(0..len).map(|j| {
+			let guard = self.guards().get(j);
+			let post = self.posts().get(j);
+			transition_row(self, i, module, j, guard, post)
+		}).collect::<Vec<_>>()
 	}
 }
 
-fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: usize, post: &ast::PostCond) -> Rc<Vec<Doc>>
+fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: usize, guard: Option<&Box<ast::GuardExpr>>, post: Option<&Box<ast::PostCond>>) -> Rc<Vec<Doc>>
 {
 	let first = j == 0;
 	Rc::new(vec![
@@ -616,66 +618,71 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 			Doc::Empty
 		},
 		// | {guard_expr} |
-		if first {
-			me.guard().as_ref().map_or(
-					Doc::Empty,
-					|guard| Doc::Code(Rc::new(guard.expr().to_doc())),
-				)
-		}else
-		{
-			Doc::Empty
+		match guard {
+			Some(guard) => Doc::Code(Rc::new(guard.expr().to_doc())),
+			None => Doc::Empty,
 		},
 		// | {guard_desc} |
-		if first {
-			Doc::Cell(Rc::new(
-				me.guard().as_ref().map_or(
-					Doc::Empty,
-					|guard| (*guard.description()).as_ref().map_or(
-						Doc::Empty,
-						|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.clone())))),
-					),
-				),
-			))
-		}else
-		{
-			Doc::Empty
+		match guard {
+			Some(guard) => match guard.description() {
+				Some(desc) =>
+						Doc::Marked(Rc::new(desc.clone())),
+				None => Doc::Empty,
+			},
+			None => Doc::Empty,
 		},
 		// | {post_targets} |
-		Doc::SepBy(
-			", ",
-			Rc::new(post.targets().iter()
-				.map(|target| Doc::Plain(Rc::new(target.clone())))
-				.collect::<Vec<_>>()),
-		),
+		match post {
+			Some(post) =>
+				Doc::SepBy(
+					", ",
+					Rc::new(post.targets().iter()
+						.map(|target| Doc::Plain(Rc::new(target.clone())))
+						.collect::<Vec<_>>()),
+				),
+			None => Doc::Empty,
+		},
 		// | {post_expr} |
-		Doc::SepByDoc(
-			Rc::new(Doc::Br),
-			Rc::new(post.exprs()
-				.iter()
-				.filter(|x| !x.is_transition())
-				.map(|x| Doc::Code(Rc::new(Doc::Fragment(Rc::new(vec![
-					x.to_doc(),
-					Doc::Static(";"),
-				])))))
-				.collect::<Vec<_>>()),
-		),
+		match post {
+			Some(post) =>
+				Doc::SepByDoc(
+					Rc::new(Doc::Br),
+					Rc::new(post.exprs()
+						.iter()
+						.filter(|x| !x.is_transition())
+						.map(|x| Doc::Code(Rc::new(Doc::Fragment(Rc::new(vec![
+							x.to_doc(),
+							Doc::Static(";"),
+						])))))
+						.collect::<Vec<_>>()),
+				),
+			None => Doc::Empty,
+		},
 		// | {transition} |
-		Doc::SepByDoc(
-			Rc::new(Doc::Br),
-			Rc::new(post.exprs()
-				.iter()
-				.filter(|x| x.is_transition())
-				.map(|x| Doc::Code(Rc::new(Doc::Fragment(Rc::new(vec![
-					x.to_doc(),
-					Doc::Static(";"),
-				])))))
-				.collect::<Vec<_>>()),
-		),
+		match post {
+			Some(post) =>
+				Doc::SepByDoc(
+					Rc::new(Doc::Br),
+					Rc::new(post.exprs()
+						.iter()
+						.filter(|x| x.is_transition())
+						.map(|x| Doc::Code(Rc::new(Doc::Fragment(Rc::new(vec![
+							x.to_doc(),
+							Doc::Static(";"),
+						])))))
+						.collect::<Vec<_>>()),
+				),
+			None => Doc::Empty,
+		},
 		// | {post_desc} |
-		post.description().as_ref().map_or(
-			Doc::Empty,
-			|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.clone())))),
-		),
+		match post {
+			Some(post) =>
+				post.description().as_ref().map_or(
+					Doc::Empty,
+					|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.clone())))),
+				),
+			None => Doc::Empty,
+		},
 		// | {desc} |
 		if first {
 			me.description().as_ref().map_or(

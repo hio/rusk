@@ -1353,25 +1353,27 @@ impl Parser
 		let (args, err) = self.arg_list_opt()?;
 
 		let save = self.save();
-		let guard = if self.keyword(scanner::KeywordKind::When)
+		let mut guards = Vec::new();
+		let err = if self.keyword(scanner::KeywordKind::When)
 		{
 			let expr = self.expr()?;
 			let desc = self.at_short_description_opt();
-			Ok(ast::GuardExpr::new_boxed(expr, desc))
+			guards.push(ast::GuardExpr::new_boxed(expr, desc));
+			None
 		}else
 		{
 			self.restore(&save);
 			let err2 = Box::new(Error::NotFound(NotFound::singleton_boxed(
 				NotFound::When(self.pos)
 			)));
-			Err(err.merge(err2))
+			Some(err.merge(err2))
 		};
 
 		match self.punct_transition_arrow()
 		{
 			Ok(_) => (),
 			Err(err2) => {
-				match guard.err()
+				match err
 				{
 					Some(err) => return Err(err.merge(err2)),
 					None => return Err(err2),
@@ -1396,7 +1398,7 @@ impl Parser
 		}
 
 		let desc = self.at_long_description_opt();
-		Ok(ast::TransitionField::new_boxed(name, args, guard.ok(), Box::new(posts), desc))
+		Ok(ast::TransitionField::new_boxed(name, args, Box::new(guards), Box::new(posts), desc))
 	}
 
 
