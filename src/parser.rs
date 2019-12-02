@@ -1357,7 +1357,7 @@ impl Parser
 		{
 			let expr = self.expr()?;
 			let desc = self.at_short_description_opt();
-			Ok((expr, desc))
+			Ok(ast::GuardExpr::new_boxed(expr, desc))
 		}else
 		{
 			self.restore(&save);

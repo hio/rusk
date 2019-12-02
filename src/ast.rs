@@ -509,7 +509,7 @@ pub struct TransitionField
 {
 	name: Box<DottedName>,
 	args: Box<ArgList>,
-	guard: Option<(Box<Expr>, Box<Option<String>>)>,
+	guard: Option<Box<GuardExpr>>,
 	posts: Box<Vec<Box<PostCond>>>,
 	desc: Box<Option<String>>,
 }
@@ -517,13 +517,13 @@ pub struct TransitionField
 
 impl TransitionField
 {
-	pub fn new_boxed(name: Box<DottedName>, args: Box<ArgList>, guard: Option<(Box<Expr>, Box<Option<String>>)>, posts: Box<Vec<Box<PostCond>>>, desc: Box<Option<String>>) -> Box<TransitionField>
+	pub fn new_boxed(name: Box<DottedName>, args: Box<ArgList>, guard: Option<Box<GuardExpr>>, posts: Box<Vec<Box<PostCond>>>, desc: Box<Option<String>>) -> Box<TransitionField>
 	{
 		Box::new(TransitionField {
-			name: name,
-			args: args,
-			guard: guard,
-			posts: posts,
+			name,
+			args,
+			guard,
+			posts,
 			desc,
 		})
 	}
@@ -538,7 +538,7 @@ impl TransitionField
 		&self.args
 	}
 
-	pub fn guard(&self) -> &Option<(Box<Expr>, Box<Option<String>>)>
+	pub fn guard(&self) -> &Option<Box<GuardExpr>>
 	{
 		&self.guard
 	}
@@ -546,6 +546,36 @@ impl TransitionField
 	pub fn posts(&self) -> &Vec<Box<PostCond>>
 	{
 		&self.posts
+	}
+
+	pub fn description(&self) -> &Option<String>
+	{
+		&self.desc
+	}
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GuardExpr
+{
+	expr: Box<Expr>,
+	desc: Box<Option<String>>,
+}
+
+
+impl GuardExpr
+{
+	pub fn new_boxed(expr: Box<Expr>, desc: Box<Option<String>>) -> Box<GuardExpr>
+	{
+		Box::new(GuardExpr {
+			expr,
+			desc,
+		})
+	}
+
+	pub fn expr(&self) -> &Expr
+	{
+		&self.expr
 	}
 
 	pub fn description(&self) -> &Option<String>

@@ -619,7 +619,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		if first {
 			me.guard().as_ref().map_or(
 					Doc::Empty,
-					|x| Doc::Code(Rc::new(x.0.to_doc())),
+					|guard| Doc::Code(Rc::new(guard.expr().to_doc())),
 				)
 		}else
 		{
@@ -630,7 +630,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 			Doc::Cell(Rc::new(
 				me.guard().as_ref().map_or(
 					Doc::Empty,
-					|guard| (*guard.1).as_ref().map_or(
+					|guard| (*guard.description()).as_ref().map_or(
 						Doc::Empty,
 						|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.clone())))),
 					),
