@@ -230,11 +230,15 @@ fn test_event()
 	test_parse("event e1,;");
 	test_parse("event e1, e2;");
 	test_parse("event e1, e2,;");
+	test_parse("event ,e1;");
+	test_parse("event ,e1,;");
 
 	test_parse("event e1;");
 	test_parse("event e1|;");
 	test_parse("event e1| e2;");
 	test_parse("event e1| e2|;");
+	test_parse("event |e1;");
+	test_parse("event |e1|;");
 
 	test_parse("event e;");
 	test_parse("event e@(summary);");
@@ -269,6 +273,7 @@ fn test_type()
 	test_parse("type x = { f1: T1, };");
 	test_parse("type x = { f1: T1, f2: T2 };");
 	test_parse("type x = { f1: T1, f2: T2, };");
+	test_parse("type x = {, f1: T1, f2: T2, };");
 
 	test_parse("type x = a b;");
 	test_parse("type x y = a b;");
@@ -279,6 +284,8 @@ fn test_type()
 	test_parse("type x = a | b;");
 	test_parse("type x = a | b |;");
 	test_parse("type x = a | b | c {} | {};");
+	test_parse("type x = | a;");
+	test_parse("type x = | a |;");
 }
 
 
@@ -485,6 +492,8 @@ fn test_state_transition()
 	test_parse("state s{ transition a when a @[- aa -], --> { post{ } } }");
 	test_parse("state s{ transition a when a @[- aa -], b --> { post{ } } }");
 	test_parse("state s{ transition a when a @[- aa -], b @[- bb -], --> { post{ } } }");
+	test_parse("state s{ transition a when, a --> { post{ } } }");
+	test_parse("state s{ transition a when, a, --> { post{ } } }");
 
 	test_parse("state s{ transition a --> { post{ target a; } } }");
 	test_parse("state s{ transition a --> { post{ target a; } } }");
@@ -710,6 +719,19 @@ impl Parser
 		}else
 		{
 			Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::Comma(self.pos)))))
+		}
+	}
+
+
+	fn punct_comma_or_vertical_bar(&mut self) -> Result<(), Box<Error>>
+	{
+		match self.punct_comma()
+		{
+			Ok(()) => Ok(()),
+			Err(err) => match self.punct_vertical_bar() {
+				Ok(()) => Ok(()),
+				Err(err2) => Err(err.merge(err2)),
+			},
 		}
 	}
 
@@ -1021,6 +1043,8 @@ impl Parser
 		let mut items = Vec::new();
 		let mut stmt_desc = Box::new(None);
 
+		let _ = self.punct_vertical_bar();
+
 		loop
 		{
 			let err = match self.punct_semi_colon() {
@@ -1085,6 +1109,8 @@ impl Parser
 
 	fn record_def_fields(&mut self) -> Result<Box<Vec<Box<ast::RecordField>>>, Box<Error>>
 	{
+		let _ = self.punct_comma();
+
 		let mut fields = Box::new(Vec::new());
 		loop
 		{
@@ -1148,6 +1174,8 @@ impl Parser
 			return Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::Event(self.pos)))));
 		}
 
+		let _ = self.punct_comma_or_vertical_bar();
+
 		let mut items = vec![ self.event_item()? ];
 		loop
 		{
@@ -1160,18 +1188,10 @@ impl Parser
 			};
 
 			self.restore(&save);
-			match self.punct_comma()
+			match self.punct_comma_or_vertical_bar()
 			{
 				Ok(()) => (),
-				Err(err2) => {
-					let err = err.merge(err2);
-					match self.punct_vertical_bar()
-					{
-						Ok(()) => (),
-						Err(err2) =>
-							return Err(err.merge(err2)),
-					}
-				},
+				Err(err2) => return Err(err.merge(err2)),
 			};
 
 			let err = match self.punct_semi_colon()
@@ -1363,7 +1383,18 @@ impl Parser
 		let mut guards = Vec::new();
 		let err = if self.keyword(scanner::KeywordKind::When)
 		{
-			let expr = self.expr()?;
+			let err = match self.punct_comma() {
+				Ok(()) => None,
+				Err(err) => Some(err),
+			};
+
+			let expr = match self.expr() {
+				Ok(expr) => expr,
+				Err(err2) => match err {
+					Some(err) => return Err(err.merge(err2)),
+					None => return Err(err2),
+				},
+			};
 			let desc = self.at_short_description_opt();
 			guards.push(ast::GuardExpr::new_boxed(expr, desc));
 
@@ -3028,6 +3059,7 @@ impl Parser
 		let mut elems = Vec::new();
 
 		self.punct_brace_left()?;
+		let _ = self.punct_semi_colon();
 		loop
 		{
 			let save = self.save();
@@ -3117,6 +3149,7 @@ impl Parser
 		let mut opts = ExprOpts::standard();
 		opts.in_op = false;
 
+		let _ = self.punct_comma();
 		let mut mutations = vec![self.mutation(&opts)?];
 
 		loop
