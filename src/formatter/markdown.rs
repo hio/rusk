@@ -158,9 +158,56 @@ impl RenderingCell
 	{
 		let mut s = String::new();
 		doc.encode(&mut s, opts).unwrap();
-		let lines = s.split('\n').map(|s| s.into()).collect::<Vec<_>>();
-		let width = lines.iter().map(|s| text_width(s)).max().unwrap_or(0);
-		RenderingCell { lines, width }
+
+		let mut lines = s.trim_end().split('\n').map(|s| s.into()).collect::<Vec<String>>();
+		// drop leading empty lines.
+		while !lines.is_empty()
+		{
+			if lines[0].chars().any(|c| !c.is_whitespace())
+			{
+				break;
+			}
+			lines.remove(0);
+		}
+
+		match lines.len()
+		{
+			0 => RenderingCell {
+					lines: vec![],
+					width: 0,
+				},
+			1 => {
+				let line = lines[0].trim_start().into();
+				let width = text_width(&line);
+				RenderingCell {
+					lines: vec![line],
+					width,
+				}
+			},
+			_ => {
+				// drop common whitespace prefix.
+				while let Some(c) = lines.iter().find_map(|line| line.chars().next())
+				{
+					if !c.is_whitespace()
+					{
+						break;
+					}
+					if !lines.iter().all(|line| line.chars().next().map_or(true, |c2| c2 == c))
+					{
+						break;
+					}
+					for line in lines.iter_mut()
+					{
+						if !line.is_empty()
+						{
+							line.drain(0..c.len_utf8());
+						}
+					}
+				}
+				let width = lines.iter().map(|s| text_width(s)).max().unwrap();
+				RenderingCell { lines, width }
+			},
+		}
 	}
 }
 
