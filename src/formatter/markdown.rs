@@ -221,7 +221,13 @@ fn write_row(f: &mut impl std::fmt::Write, row: &Vec<RenderingCell>, widths: &Ve
 		write!(f, "|")?;
 		for (i, cell) in row.iter().enumerate()
 		{
-			write!(f, " {1:0$} |", widths[i], cell.lines.get(li).unwrap_or(&String::new()))?;
+			match cell.lines.get(li)
+			{
+				Some(s) =>
+					write!(f, " {}{} |", s, " ".repeat(widths[i] - text_width(&s)))?,
+				None =>
+					write!(f, " {} |", " ".repeat(widths[i]))?,
+			}
 		}
 		write!(f, "\n")?;
 	}
