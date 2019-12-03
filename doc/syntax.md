@@ -35,7 +35,7 @@ invariant-stmt ::=
 
 transition-stmt ::=
   "transition" event-name arg-list?
-  ("when" cond-expr at-phrase-description)?
+  ("when" (cond-expr at-phrase-description <sep-end-by ",">)+)?
   "-->" "{"
     post-cond+
   "}" ;;

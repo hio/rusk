@@ -44,3 +44,13 @@ c
 * a
 * b
 -};
+
+
+state x
+{
+	transition xx
+	when a @[- aa -],
+	b@[- bb -] -->
+	{
+	}
+}

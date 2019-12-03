@@ -479,6 +479,13 @@ fn test_state_invariant()
 fn test_state_transition()
 {
 	test_parse("state s{ transition a --> { post{ } } }");
+
+	test_parse("state s{ transition a when a --> { post{ } } }");
+	test_parse("state s{ transition a when a @[- aa -] --> { post{ } } }");
+	test_parse("state s{ transition a when a @[- aa -], --> { post{ } } }");
+	test_parse("state s{ transition a when a @[- aa -], b --> { post{ } } }");
+	test_parse("state s{ transition a when a @[- aa -], b @[- bb -], --> { post{ } } }");
+
 	test_parse("state s{ transition a --> { post{ target a; } } }");
 	test_parse("state s{ transition a --> { post{ target a; } } }");
 	test_parse("state s{ transition a --> { post{ target a,; } } }");
@@ -1359,26 +1366,36 @@ impl Parser
 			let expr = self.expr()?;
 			let desc = self.at_short_description_opt();
 			guards.push(ast::GuardExpr::new_boxed(expr, desc));
-			None
+
+			loop
+			{
+				match self.punct_comma()
+				{
+					Ok(()) => (),
+					Err(err) => break err,
+				}
+
+				let expr = match self.expr() {
+					Ok(expr) => expr,
+					Err(err) => break err,
+				};
+				let desc = self.at_short_description_opt();
+				guards.push(ast::GuardExpr::new_boxed(expr, desc));
+			}
 		}else
 		{
 			self.restore(&save);
 			let err2 = Box::new(Error::NotFound(NotFound::singleton_boxed(
 				NotFound::When(self.pos)
 			)));
-			Some(err.merge(err2))
+			err.merge(err2)
 		};
 
 		match self.punct_transition_arrow()
 		{
 			Ok(_) => (),
-			Err(err2) => {
-				match err
-				{
-					Some(err) => return Err(err.merge(err2)),
-					None => return Err(err2),
-				}
-			},
+			Err(err2) =>
+				return Err(err.merge(err2)),
 		}
 		self.punct_brace_left()?;
 
