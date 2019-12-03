@@ -6,8 +6,6 @@ title: TODO
 
 ### Near Future
 
-- TD-107: when cond\_1 @[- desc 1 -], cond\_2 @[- desc 2 -], --> { ... }
-- TD-136: remove indentation in description.
 - TD-114: nested anon record def.
 - TD-104: tau (arg) ... guard -\->
 
@@ -81,6 +79,8 @@ blocked/blocks:
 ## Done
 
 - (newer)
+- TD-136: remove indentation in description.
+- TD-107: when cond\_1 @[- desc 1 -], cond\_2 @[- desc 2 -], --> { ... }
 - TD-150: list comprehension [x | elem <- collection] rather than [x | elem in collection].
 - RF-139: allow space chars between @ and {- -}
 - TD-162: Doc::PlainText, MarkedText
