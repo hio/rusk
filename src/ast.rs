@@ -56,7 +56,7 @@ impl Module
 		self.events
 			.iter()
 			.find(|item| item.name() == name)
-			.and_then(|item| item.summary().as_ref())
+			.and_then(|item| item.summary().as_ref().map(|summ| summ.as_ref()))
 	}
 }
 
@@ -65,16 +65,16 @@ impl Module
 pub struct TypeStmt
 {
 	name: Box<DottedName>,
-	summary: Box<Option<String>>,
+	summary: Option<Box<String>>,
 	args: Box<ArgList>,
 	items: Box<Vec<Box<TypeItem>>>,
-	desc: Box<Option<String>>,
+	desc: Option<Box<String>>,
 }
 
 
 impl TypeStmt
 {
-	pub fn new_boxed(name: Box<DottedName>, summary: Box<Option<String>>, args: Box<ArgList>, items: Box<Vec<Box<TypeItem>>>, desc: Box<Option<String>>) -> Box<TypeStmt>
+	pub fn new_boxed(name: Box<DottedName>, summary: Option<Box<String>>, args: Box<ArgList>, items: Box<Vec<Box<TypeItem>>>, desc: Option<Box<String>>) -> Box<TypeStmt>
 	{
 		Box::new(TypeStmt {
 			name,
@@ -91,7 +91,7 @@ impl TypeStmt
 		&self.name
 	}
 
-	pub fn summary(&self) -> &Option<String>
+	pub fn summary(&self) -> &Option<Box<String>>
 	{
 		&self.summary
 	}
@@ -106,7 +106,7 @@ impl TypeStmt
 		&self.items
 	}
 
-	pub fn description(&self) -> &Box<Option<String>>
+	pub fn description(&self) -> &Option<Box<String>>
 	{
 		&self.desc
 	}
@@ -198,15 +198,15 @@ impl RecordDef
 pub struct RecordField
 {
 	name: Box<Expr>,
-	summary: Box<Option<String>>,
+	summary: Option<Box<String>>,
 	typ: Box<Expr>,
-	desc: Box<Option<String>>,
+	desc: Option<Box<String>>,
 }
 
 
 impl RecordField
 {
-	pub fn new_boxed(name: Box<Expr>, summary: Box<Option<String>>, typ: Box<Expr>, desc: Box<Option<String>>) -> Box<RecordField>
+	pub fn new_boxed(name: Box<Expr>, summary: Option<Box<String>>, typ: Box<Expr>, desc: Option<Box<String>>) -> Box<RecordField>
 	{
 		Box::new(RecordField {
 			name,
@@ -221,7 +221,7 @@ impl RecordField
 		&self.name
 	}
 
-	pub fn summary(&self) -> &Option<String>
+	pub fn summary(&self) -> &Option<Box<String>>
 	{
 		&self.summary
 	}
@@ -231,7 +231,7 @@ impl RecordField
 		&self.typ
 	}
 
-	pub fn description(&self) -> &Option<String>
+	pub fn description(&self) -> &Option<Box<String>>
 	{
 		&self.desc
 	}
@@ -259,15 +259,15 @@ impl Event
 pub struct EventItem
 {
 	name: Box<DottedName>,
-	summary: Box<Option<String>>,
+	summary: Option<Box<String>>,
 	args: Box<ArgList>,
-	desc: Box<Option<String>>,
+	desc: Option<Box<String>>,
 }
 
 
 impl EventItem
 {
-	pub fn new_boxed(name: Box<DottedName>, summary: Box<Option<String>>, args: Box<ArgList>, desc: Box<Option<String>>) -> Box<EventItem>
+	pub fn new_boxed(name: Box<DottedName>, summary: Option<Box<String>>, args: Box<ArgList>, desc: Option<Box<String>>) -> Box<EventItem>
 	{
 		Box::new(EventItem {
 			name,
@@ -282,7 +282,7 @@ impl EventItem
 		&self.name
 	}
 
-	pub fn summary(&self) -> &Option<String>
+	pub fn summary(&self) -> &Option<Box<String>>
 	{
 		&self.summary
 	}
@@ -292,7 +292,7 @@ impl EventItem
 		&self.args
 	}
 
-	pub fn description(&self) -> &Box<Option<String>>
+	pub fn description(&self) -> &Option<Box<String>>
 	{
 		&self.desc
 	}
@@ -384,7 +384,7 @@ pub enum Field
 
 impl Field
 {
-	pub fn new_var_boxed(name: Box<Expr>, typ: Option<Box<Expr>>, init: Option<Box<Expr>>, summary: Box<Option<String>>, desc: Box<Option<String>>) -> Box<Field>
+	pub fn new_var_boxed(name: Box<Expr>, typ: Option<Box<Expr>>, init: Option<Box<Expr>>, summary: Option<Box<String>>, desc: Option<Box<String>>) -> Box<Field>
 	{
 		Box::new(Field::Var(VarField::new(name, typ, init, summary, desc)))
 	}
@@ -415,14 +415,14 @@ pub struct VarField
 	name: Box<Expr>,
 	typ: Option<Box<Expr>>,
 	init: Option<Box<Expr>>,
-	summary: Box<Option<String>>,
-	desc: Box<Option<String>>,
+	summary: Option<Box<String>>,
+	desc: Option<Box<String>>,
 }
 
 
 impl VarField
 {
-	pub fn new(name: Box<Expr>, typ: Option<Box<Expr>>, init: Option<Box<Expr>>, summary: Box<Option<String>>, desc: Box<Option<String>>) -> VarField
+	pub fn new(name: Box<Expr>, typ: Option<Box<Expr>>, init: Option<Box<Expr>>, summary: Option<Box<String>>, desc: Option<Box<String>>) -> VarField
 	{
 		VarField {
 			name,
@@ -448,12 +448,12 @@ impl VarField
 		&self.init
 	}
 
-	pub fn summary(&self) -> &Option<String>
+	pub fn summary(&self) -> &Option<Box<String>>
 	{
 		&self.summary
 	}
 
-	pub fn description(&self) -> &Option<String>
+	pub fn description(&self) -> &Option<Box<String>>
 	{
 		&self.desc
 	}
@@ -464,15 +464,15 @@ impl VarField
 pub struct InvariantField
 {
 	name: Option<String>,
-	summary: Box<Option<String>>,
+	summary: Option<Box<String>>,
 	exprs: Box<Vec<Box<Expr>>>,
-	desc: Box<Option<String>>,
+	desc: Option<Box<String>>,
 }
 
 
 impl InvariantField
 {
-	pub fn new_boxed(name: Option<String>, summary: Box<Option<String>>, exprs: Box<Vec<Box<Expr>>>, desc: Box<Option<String>>) -> Box<InvariantField>
+	pub fn new_boxed(name: Option<String>, summary: Option<Box<String>>, exprs: Box<Vec<Box<Expr>>>, desc: Option<Box<String>>) -> Box<InvariantField>
 	{
 		Box::new(InvariantField {
 			name,
@@ -487,7 +487,7 @@ impl InvariantField
 		&self.name
 	}
 
-	pub fn summary(&self) -> &Option<String>
+	pub fn summary(&self) -> &Option<Box<String>>
 	{
 		&self.summary
 	}
@@ -497,7 +497,7 @@ impl InvariantField
 		&*self.exprs
 	}
 
-	pub fn description(&self) -> &Option<String>
+	pub fn description(&self) -> &Option<Box<String>>
 	{
 		&self.desc
 	}
@@ -511,13 +511,13 @@ pub struct TransitionField
 	args: Box<ArgList>,
 	guards: Box<Vec<Box<GuardExpr>>>,
 	posts: Box<Vec<Box<PostCond>>>,
-	desc: Box<Option<String>>,
+	desc: Option<Box<String>>,
 }
 
 
 impl TransitionField
 {
-	pub fn new_boxed(name: Box<DottedName>, args: Box<ArgList>, guards: Box<Vec<Box<GuardExpr>>>, posts: Box<Vec<Box<PostCond>>>, desc: Box<Option<String>>) -> Box<TransitionField>
+	pub fn new_boxed(name: Box<DottedName>, args: Box<ArgList>, guards: Box<Vec<Box<GuardExpr>>>, posts: Box<Vec<Box<PostCond>>>, desc: Option<Box<String>>) -> Box<TransitionField>
 	{
 		Box::new(TransitionField {
 			name,
@@ -548,7 +548,7 @@ impl TransitionField
 		&self.posts
 	}
 
-	pub fn description(&self) -> &Option<String>
+	pub fn description(&self) -> &Option<Box<String>>
 	{
 		&self.desc
 	}
@@ -559,13 +559,13 @@ impl TransitionField
 pub struct GuardExpr
 {
 	expr: Box<Expr>,
-	desc: Box<Option<String>>,
+	desc: Option<Box<String>>,
 }
 
 
 impl GuardExpr
 {
-	pub fn new_boxed(expr: Box<Expr>, desc: Box<Option<String>>) -> Box<GuardExpr>
+	pub fn new_boxed(expr: Box<Expr>, desc: Option<Box<String>>) -> Box<GuardExpr>
 	{
 		Box::new(GuardExpr {
 			expr,
@@ -578,7 +578,7 @@ impl GuardExpr
 		&self.expr
 	}
 
-	pub fn description(&self) -> &Option<String>
+	pub fn description(&self) -> &Option<Box<String>>
 	{
 		&self.desc
 	}
@@ -643,13 +643,13 @@ pub struct PostCond
 {
 	targets: Box<Vec<String>>,
 	exprs: Box<Vec<Box<PostCondItem>>>,
-	desc: Box<Option<String>>,
+	desc: Option<Box<String>>,
 }
 
 
 impl PostCond
 {
-	pub fn new_boxed(targets: Box<Vec<String>>, exprs: Box<Vec<Box<PostCondItem>>>, desc: Box<Option<String>>) -> Box<PostCond>
+	pub fn new_boxed(targets: Box<Vec<String>>, exprs: Box<Vec<Box<PostCondItem>>>, desc: Option<Box<String>>) -> Box<PostCond>
 	{
 		Box::new(PostCond {
 			targets,
@@ -668,7 +668,7 @@ impl PostCond
 		&self.exprs
 	}
 
-	pub fn description(&self) -> &Option<String>
+	pub fn description(&self) -> &Option<Box<String>>
 	{
 		&self.desc
 	}
@@ -713,14 +713,14 @@ pub struct VarStmt
 	matcher: Box<Expr>,
 	typ: Option<Box<Expr>>,
 	init: Option<Box<Expr>>,
-	summary: Box<Option<String>>,
-	desc: Box<Option<String>>,
+	summary: Option<Box<String>>,
+	desc: Option<Box<String>>,
 }
 
 
 impl VarStmt
 {
-	pub fn new_boxed(var_type: VarType, matcher: Box<Expr>, typ: Option<Box<Expr>>, init: Option<Box<Expr>>, summary: Box<Option<String>>, desc: Box<Option<String>>) -> Box<VarStmt>
+	pub fn new_boxed(var_type: VarType, matcher: Box<Expr>, typ: Option<Box<Expr>>, init: Option<Box<Expr>>, summary: Option<Box<String>>, desc: Option<Box<String>>) -> Box<VarStmt>
 	{
 		Box::new(VarStmt {
 			var_type,
@@ -763,12 +763,12 @@ impl VarStmt
 		&self.init
 	}
 
-	pub fn summary(&self) -> &Option<String>
+	pub fn summary(&self) -> &Option<Box<String>>
 	{
 		&self.summary
 	}
 
-	pub fn description(&self) -> &Option<String>
+	pub fn description(&self) -> &Option<Box<String>>
 	{
 		&self.desc
 	}

@@ -230,7 +230,7 @@ impl ToDocRow for ast::TypeStmt
 			// | {name}{args} |
 			name_args_to_doc(self.name(), self.args()),
 			// | {summary} |
-			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))),
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
 			// | {definition} |
 			if self.items().len() == 1
 			{
@@ -249,7 +249,7 @@ impl ToDocRow for ast::TypeStmt
 				)))
 			},
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.as_ref().clone()))))),
 		])
 	}
 }
@@ -315,20 +315,20 @@ impl ToDoc for Vec<Box<ast::RecordField>>
 	}
 }
 
-fn to_summary_doc(summ: &String) -> Doc
+fn to_summary_doc(summ: &Box<String>) -> Doc
 {
 	Doc::Fragment(Rc::new(vec![
 		Doc::Static(" @( "),
-		Doc::Marked(Rc::new(summ.clone())),
+		Doc::Marked(Rc::new(summ.as_ref().clone())),
 		Doc::Static(" )"),
 	]))
 }
 
-fn to_description_doc(desc: &String) -> Doc
+fn to_description_doc(desc: &Box<String>) -> Doc
 {
 	Doc::Fragment(Rc::new(vec![
 		Doc::Static(" @{- "),
-		Doc::Marked(Rc::new(desc.clone())),
+		Doc::Marked(Rc::new(desc.as_ref().clone())),
 		Doc::Static(" -}"),
 	]))
 }
@@ -357,9 +357,9 @@ impl ToDocRow for ast::EventItem
 			// | {name}{args} |
 			name_args_to_doc(self.name(), self.args()),
 			// | {summary} |
-			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))),
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.as_ref().clone()))))),
 		])
 	}
 }
@@ -505,9 +505,9 @@ impl ToDocRow for ast::VarField
 			// | `{init}` |
 			self.init().as_ref().map_or(Doc::Empty, |init| Doc::Code(Rc::new(init.to_doc()))),
 			// | {summary} |
-			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))),
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))))),
 		])
 	}
 }
@@ -538,7 +538,7 @@ impl ToDocRow for ast::InvariantField
 			// | {name} |
 			self.name().as_ref().map_or(Doc::Empty, |name| Doc::Plain(Rc::new(name.clone()))),
 			// | {summary} |
-			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))),
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
 			// | {exprs} |
 			Doc::SepByDoc(
 				Rc::new(Doc::Br),
@@ -559,7 +559,7 @@ impl ToDocRow for ast::InvariantField
 				.map_or(
 					Doc::Empty,
 					|desc| Doc::Cell(Rc::new(
-						Doc::Marked(Rc::new(desc.clone()))
+						Doc::Marked(Rc::new(desc.as_ref().clone()))
 					))
 				),
 		])
@@ -626,7 +626,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		match guard {
 			Some(guard) => match guard.description() {
 				Some(desc) =>
-						Doc::Marked(Rc::new(desc.clone())),
+						Doc::Marked(Rc::new(desc.as_ref().clone())),
 				None => Doc::Empty,
 			},
 			None => Doc::Empty,
@@ -679,7 +679,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 			Some(post) =>
 				post.description().as_ref().map_or(
 					Doc::Empty,
-					|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.clone())))),
+					|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
 				),
 			None => Doc::Empty,
 		},
@@ -687,7 +687,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		if first {
 			me.description().as_ref().map_or(
 				Doc::Empty,
-				|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.clone())))),
+				|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
 			)
 		}else
 		{
@@ -795,9 +795,9 @@ impl ToDocRow for ast::VarStmt
 			// | `{init}` |
 			self.init().as_ref().map_or(Doc::Empty, |init| Doc::Code(Rc::new(init.to_doc()))),
 			// | {summary} |
-			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.clone()))),
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.as_ref().clone()))))),
 		])
 	}
 }

@@ -17,7 +17,6 @@ title: TODO
 - TD-126: allow single paren in @(- -)
 - RF-122: drop escapes by (( and ))
 - TD-161: split up KwOper `in`.
-- RF-115: Option<Box<String>> rather than Box<Option<String>> (31)
 
 ### Backlog
 
@@ -79,6 +78,7 @@ blocked/blocks:
 ## Done
 
 - (newer)
+- RF-115: Option<Box<String>> rather than Box<Option<String>> (31)
 - TD-136: remove indentation in description.
 - TD-107: when cond\_1 @[- desc 1 -], cond\_2 @[- desc 2 -], --> { ... }
 - TD-150: list comprehension [x | elem <- collection] rather than [x | elem in collection].

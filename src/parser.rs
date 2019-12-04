@@ -1041,7 +1041,7 @@ impl Parser
 		}
 
 		let mut items = Vec::new();
-		let mut stmt_desc = Box::new(None);
+		let mut stmt_desc = None;
 
 		let _ = self.punct_vertical_bar();
 
@@ -1083,7 +1083,7 @@ impl Parser
 				Ok(()) => (),
 				Err(err) => {
 					stmt_desc = self.at_long_description_opt();
-					match *stmt_desc
+					match stmt_desc
 					{
 						Some(_) => {
 							self.punct_semi_colon()?;
@@ -1302,14 +1302,6 @@ impl Parser
 
 		let desc = self.at_long_description_opt();
 
-		let summary = match *summary {
-			Some(s) => Some(Box::new(s)),
-			None => None,
-		};
-		let desc = match *desc {
-			Some(s) => Some(Box::new(s)),
-			None => None,
-		};
 		Ok(ast::State::new_boxed(name, summary, args, fields, desc))
 	}
 
@@ -3329,65 +3321,65 @@ impl Parser
 	}
 
 
-	fn at_summary_opt(&mut self) -> Box<Option<String>>
+	fn at_summary_opt(&mut self) -> Option<Box<String>>
 	{
 		let save = self.save();
 		match self.next_token()
 		{
 			Some(&scanner::Token::AtSummary(ref value)) =>
-				Box::new(Some(value.value().clone())),
+				Some(Box::new(value.value().clone())),
 
 			_ => {
 				self.restore(&save);
-				Box::new(None)
+				None
 			},
 		}
 	}
 
 
-	fn at_short_description_opt(&mut self) -> Box<Option<String>>
+	fn at_short_description_opt(&mut self) -> Option<Box<String>>
 	{
 		let save = self.save();
 		match self.next_token()
 		{
 			Some(&scanner::Token::AtShortDescription(ref value)) =>
-				Box::new(Some(value.value().clone())),
+				Some(Box::new(value.value().clone())),
 
 			_ => {
 				self.restore(&save);
-				Box::new(None)
+				None
 			},
 		}
 	}
 
 
-	fn at_long_description_opt(&mut self) -> Box<Option<String>>
+	fn at_long_description_opt(&mut self) -> Option<Box<String>>
 	{
 		let save = self.save();
 		match self.next_token()
 		{
 			Some(&scanner::Token::AtLongDescription(ref value)) =>
-				Box::new(Some(value.value().clone())),
+				Some(Box::new(value.value().clone())),
 
 			_ => {
 				self.restore(&save);
-				Box::new(None)
+				None
 			},
 		}
 	}
 
 
-	fn at_line_description_opt(&mut self) -> Box<Option<String>>
+	fn at_line_description_opt(&mut self) -> Option<Box<String>>
 	{
 		let save = self.save();
 		match self.next_token()
 		{
 			Some(&scanner::Token::AtLineDescription(ref value)) =>
-				Box::new(Some(value.value().clone())),
+				Some(Box::new(value.value().clone())),
 
 			_ => {
 				self.restore(&save);
-				Box::new(None)
+				None
 			},
 		}
 	}
