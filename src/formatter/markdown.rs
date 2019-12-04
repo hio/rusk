@@ -89,6 +89,7 @@ impl WriteMarkdownText for Doc
 			Doc::Marked(ref s) => write!(f, "{}", s),
 			Doc::Static(ref s) => write!(f, "{}", s),
 			Doc::Br => write!(f, "<br />"),
+			Doc::Hr => write!(f, "\n---\n\n"),
 			Doc::Code(ref node) => {
 				write!(f, "``")?;
 				node.encode(f, &Opts::in_code())?;
@@ -105,6 +106,11 @@ impl WriteMarkdownText for Doc
 			Doc::Table(ref header, ref rows) => write_table(f, opts, header, rows),
 
 			Doc::Cell(ref v) => v.encode(f, opts),
+			Doc::BlockQuote(ref d) => {
+				let mut s = String::new();
+				d.encode(&mut s, opts)?;
+				write!(f, "{}", s.split("\n").map(|line| format!("> {}\n", line)).collect::<Vec<_>>().concat())
+			},
 		}
 	}
 }

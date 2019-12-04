@@ -97,6 +97,7 @@ impl WriteRestText for Doc
 			Doc::Marked(ref s) => escape(f, s, opts, false),
 			Doc::Static(ref s) => escape(f, s, opts, true),
 			Doc::Br => write!(f, "<br />"),
+			Doc::Hr => write!(f, "---\n"),
 			Doc::Code(ref node) => {
 				write!(f, "``")?;
 				node.encode(f, &Opts::in_code())?;
@@ -161,6 +162,12 @@ impl WriteRestText for Doc
 			Doc::Cell(ref v) => {
 				v.encode(f, opts)?;
 				Ok(())
+			},
+
+			Doc::BlockQuote(ref d) => {
+				let mut s = String::new();
+				d.encode(&mut s, opts)?;
+				write!(f, "{}", s.split("\n").map(|line| format!("> {}\n", line)).collect::<Vec<_>>().concat())
 			},
 		}
 	}

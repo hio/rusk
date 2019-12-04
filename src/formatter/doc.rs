@@ -19,12 +19,14 @@ pub enum Doc
 	Marked(Rc<String>),
 	Static(&'static str),
 	Br,
+	Hr,
 	Code(Rc<Doc>),
 	SepBy(&'static str, Rc<Vec<Doc>>),
 	SepByDoc(Rc<Doc>, Rc<Vec<Doc>>),
 	SepEndBy(&'static str, &'static str, Rc<Vec<Doc>>),
 	Table(Rc<Vec<Doc>>, Rc<Vec<Rc<Vec<Doc>>>>),
 	Cell(Rc<Doc>),
+	BlockQuote(Rc<Doc>),
 }
 
 
@@ -574,8 +576,7 @@ impl HeaderRow for ast::TransitionField
 			Doc::Static("#"),
 			Doc::Static("Event\n(Name)"),
 			Doc::Static("Event\n(Summary)"),
-			Doc::Static("Guard\n(Expr)"),
-			Doc::Static("Guard\n(Description)"),
+			Doc::Static("Guard"),
 			Doc::Static("Post cond\n(Target)"),
 			Doc::Static("Post cond\n(Expr)"),
 			Doc::Static("Transition"),
@@ -589,17 +590,16 @@ impl ToDocRowsWithModule for ast::TransitionField
 {
 	fn to_doc_rows(&self, i: usize, module: &ast::Module) -> Vec<Rc<Vec<Doc>>>
 	{
-		let len = self.guards().len().max(self.posts().len());
+		let len = self.posts().len().max(1);
 
 		(0..len).map(|j| {
-			let guard = self.guards().get(j);
 			let post = self.posts().get(j);
-			transition_row(self, i, module, j, guard, post)
+			transition_row(self, i, module, j, post)
 		}).collect::<Vec<_>>()
 	}
 }
 
-fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: usize, guard: Option<&Box<ast::GuardExpr>>, post: Option<&Box<ast::PostCond>>) -> Rc<Vec<Doc>>
+fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: usize, post: Option<&Box<ast::PostCond>>) -> Rc<Vec<Doc>>
 {
 	let first = j == 0;
 	Rc::new(vec![
@@ -617,20 +617,8 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		{
 			Doc::Empty
 		},
-		// | {guard_expr} |
-		match guard {
-			Some(guard) => Doc::Code(Rc::new(guard.expr().to_doc())),
-			None => Doc::Empty,
-		},
-		// | {guard_desc} |
-		match guard {
-			Some(guard) => match guard.description() {
-				Some(desc) =>
-						Doc::Marked(Rc::new(desc.as_ref().clone())),
-				None => Doc::Empty,
-			},
-			None => Doc::Empty,
-		},
+		// | {guard_expr}/{guard_desc} |
+		guards_to_cell(me.guards()),
 		// | {post_targets} |
 		match post {
 			Some(post) =>
@@ -695,6 +683,42 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		},
 	])
 }
+
+
+fn guards_to_cell(guards: &Vec<Box<ast::GuardExpr>>) -> Doc
+{
+	match guards.len()
+	{
+		0 => Doc::Empty,
+		1 => Doc::Cell(Rc::new(guard_to_cell(guards[0].as_ref()))),
+		_ => Doc::Cell(Rc::new(Doc::Fragment(Rc::new(vec![
+			Doc::Static("Satisfy all the following conditions:\n"),
+			Doc::Hr,
+			Doc::SepByDoc(
+				Rc::new(Doc::Fragment(Rc::new(vec![
+					Doc::Hr,
+				]))),
+				Rc::new(guards.iter().map(|guard| guard_to_cell(guard)).collect::<Vec<_>>()),
+			),
+		])))),
+	}
+}
+
+
+fn guard_to_cell(guard: &ast::GuardExpr) -> Doc
+{
+	match guard.description() {
+		Some(desc) => Doc::Fragment(Rc::new(vec![
+				Doc::Code(Rc::new(guard.expr().to_doc())),
+				Doc::Static("\n"),
+				Doc::Static("\n"),
+				Doc::BlockQuote(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
+			])),
+		None =>
+			Doc::Code(Rc::new(guard.expr().to_doc())),
+	}
+}
+
 
 
 fn name_args_to_doc(name: &ast::DottedName, args: &ast::ArgList) -> Doc
