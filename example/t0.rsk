@@ -1,6 +1,7 @@
 
 type x = a | b | c {} | {};
 type x = {f:t};
+type x = {f:{g:t}};
 type x = a;
 type x = {};
 type x = a {};

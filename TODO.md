@@ -6,7 +6,6 @@ title: TODO
 
 ### Near Future
 
-- TD-114: nested anon record def.
 - TD-104: tau (arg) ... guard -\->
 
 ### Misc
@@ -78,6 +77,7 @@ blocked/blocks:
 ## Done
 
 - (newer)
+- TD-114: nested anon record def.
 - RF-115: Option<Box<String>> rather than Box<Option<String>> (31)
 - TD-136: remove indentation in description.
 - TD-107: when cond\_1 @[- desc 1 -], cond\_2 @[- desc 2 -], --> { ... }

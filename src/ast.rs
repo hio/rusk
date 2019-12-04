@@ -862,6 +862,7 @@ pub enum Expr
 	TargetSet(Box<Vec<Box<Expr>>>),
 	BinOp(Box<BinOpExpr>),
 	RecordMutation(Box<RecordMutation>),
+	RecordDef(Box<RecordDef>),
 	Quantifier(Box<QuantifierExpr>),
 	Fn(Box<FnExpr>),
 	Any,
@@ -971,6 +972,11 @@ impl Expr
 		Box::new(Expr::RecordMutation(RecordMutation::new_boxed(style, expr, mutations)))
 	}
 
+	pub fn new_record_def_boxed(definition: Box<RecordDef>) -> Box<Expr>
+	{
+		Box::new(Expr::RecordDef(definition))
+	}
+
 	pub fn new_append_boxed(lhs: Box<Expr>, op: String, rhs: Box<Expr>) -> Box<Expr>
 	{
 		Box::new(Expr::BinOp(BinOpExpr::new_boxed(Prec::Append, lhs, op, rhs)))
@@ -1066,6 +1072,7 @@ impl Expr
 		Expr::BinOp(x) => x.prec(),
 		Expr::Let(_) => Prec::Term,
 		Expr::RecordMutation(_) => Prec::Term,
+		Expr::RecordDef(_) => Prec::Term,
 		Expr::Any => Prec::Term,
 		Expr::Quantifier(_) => Prec::Term,
 		Expr::Fn(_) => Prec::Term,

@@ -938,6 +938,7 @@ impl ToDoc for ast::Expr
 		ast::Expr::BinOp(x) => x.to_doc(),
 		ast::Expr::Let(x) => x.to_doc(),
 		ast::Expr::RecordMutation(x) => x.to_doc(),
+		ast::Expr::RecordDef(x) => x.to_doc(),
 		ast::Expr::Quantifier(x) => x.to_doc(),
 		ast::Expr::Fn(x) => x.to_doc(),
 		ast::Expr::Any => Doc::Static("any"),

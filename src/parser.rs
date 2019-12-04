@@ -275,6 +275,8 @@ fn test_type()
 	test_parse("type x = { f1: T1, f2: T2, };");
 	test_parse("type x = {, f1: T1, f2: T2, };");
 
+	test_parse("type x = { f1: { f2: T } };");
+
 	test_parse("type x = a b;");
 	test_parse("type x y = a b;");
 	test_parse("type Either a b = Left a | Right b;");
@@ -535,6 +537,7 @@ fn test_state_transition()
 struct ExprOpts
 {
 	record_construction: bool,
+	record_def: bool,
 	application: bool,
 	in_op: bool,
 	as_a_op: bool,
@@ -549,6 +552,7 @@ impl ExprOpts
 	{
 		ExprOpts {
 			record_construction: true, // a { ... }.
+			record_def: false,
 			application: true, // a b.
 			in_op: true, // a in b.
 			as_a_op: true, // a : b.
@@ -578,6 +582,13 @@ impl ExprOpts
 	{
 		let mut opts = Self::standard();
 		opts.prefix_op = false;
+		opts
+	}
+
+	fn allow_record_def() -> ExprOpts
+	{
+		let mut opts = Self::standard();
+		opts.record_def = true;
 		opts
 	}
 }
@@ -1129,7 +1140,7 @@ impl Parser
 			};
 			let summary = self.at_summary_opt();
 			self.punct_colon()?;
-			let typ = self.expr()?;
+			let typ = self.expr_(&ExprOpts::allow_record_def())?;
 			let mut desc = self.at_short_description_opt();
 
 			// compat.
@@ -2470,7 +2481,7 @@ impl Parser
 		};
 
 		self.restore(&save);
-		let err = match self.record_mutation() {
+		let err = match self.brace_expr(opts) {
 			result@Ok(_) => return result,
 			Err(err2) => {
 				if self.pos != save.pos
@@ -3231,6 +3242,27 @@ impl Parser
 		};
 
 		Ok((ast::Expr::new_fn_boxed(args, typ, expr), err))
+	}
+
+
+	fn brace_expr(&mut self, opts: &ExprOpts) -> Result<Box<ast::Expr>, Box<Error>>
+	{
+		if opts.record_def
+		{
+			self.record_def()
+		}else
+		{
+			self.record_mutation()
+		}
+	}
+
+
+	fn record_def(&mut self) -> Result<Box<ast::Expr>, Box<Error>>
+	{
+		self.punct_brace_left()?;
+		let fields = self.record_def_fields()?;
+		let record_def = ast::RecordDef::new_boxed(None, fields);
+		Ok(ast::Expr::new_record_def_boxed(record_def))
 	}
 
 
