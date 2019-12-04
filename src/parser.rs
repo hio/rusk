@@ -1174,6 +1174,8 @@ impl Parser
 			return Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::Event(self.pos)))));
 		}
 
+		let _ = self.punct_equal();
+
 		let _ = self.punct_comma_or_vertical_bar();
 
 		let mut items = vec![ self.event_item()? ];
