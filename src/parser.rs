@@ -124,6 +124,7 @@ pub enum NotFound
 	Post(Offset),
 	State(Offset),
 	Target(Offset),
+	Tau(Offset),
 	Transition(Offset),
 	Type(Offset),
 	Var(Offset),
@@ -188,6 +189,7 @@ impl NotFound
 		NotFound::Post(offset) => *offset,
 		NotFound::State(offset) => *offset,
 		NotFound::Target(offset) => *offset,
+		NotFound::Tau(offset) => *offset,
 		NotFound::Transition(offset) => *offset,
 		NotFound::Type(offset) => *offset,
 		NotFound::Var(offset) => *offset,
@@ -534,6 +536,17 @@ fn test_state_transition()
 }
 
 
+#[test]
+fn test_state_tau()
+{
+	test_parse("tau --> { }");
+	test_parse("tau --> { post{ } }");
+	test_parse("tau --> { }@{- -}");
+	test_parse("tau (a:T) --> { }");
+	test_parse("tau (a:T) (b:T) --> { }");
+}
+
+
 struct ExprOpts
 {
 	record_construction: bool,
@@ -655,6 +668,18 @@ impl Parser
 				self.pos -= 1;
 				false
 			},
+		}
+	}
+
+
+	fn keyword_tau(&mut self) -> Result<(), Box<Error>>
+	{
+		if self.keyword(scanner::KeywordKind::Tau)
+		{
+			Ok(())
+		}else
+		{
+			return Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::Tau(self.pos)))));
 		}
 	}
 
@@ -940,6 +965,7 @@ impl Parser
 		let mut vars = Box::new(Vec::new());
 		let mut states = Box::new(Vec::new());
 		let mut invariants = Box::new(Vec::new());
+		let mut taus = Box::new(Vec::new());
 
 		loop
 		{
@@ -1027,10 +1053,27 @@ impl Parser
 					err.merge(err2)
 				},
 			};
+
+			self.restore(&save);
+			let err = match self.tau_stmt()
+			{
+				Ok(tau) => {
+					taus.push(tau);
+					continue;
+				},
+				Err(err2) => {
+					if self.pos != save.pos
+					{
+						return Err(err2)
+					}
+					err.merge(err2)
+				},
+			};
+
 			return Err(err);
 		}
 
-		let module = ast::Module::new_boxed(types, events, vars, states, invariants);
+		let module = ast::Module::new_boxed(types, events, vars, states, invariants, taus);
 		Ok(module)
 	}
 
@@ -1382,6 +1425,12 @@ impl Parser
 		}
 
 		let name = self.dotted_name()?;
+		self.transition_stmt_(Some(name))
+	}
+
+
+	fn transition_stmt_(&mut self, name: Option<Box<ast::DottedName>>) -> Result<Box<ast::TransitionField>, Box<Error>>
+	{
 		let (args, err) = self.arg_list_opt()?;
 
 		let save = self.save();
@@ -1713,6 +1762,14 @@ impl Parser
 			summary,
 			desc,
 		))
+	}
+
+
+	fn tau_stmt(&mut self) -> Result<Box<ast::Tau>, Box<Error>>
+	{
+		self.keyword_tau()?;
+		let transition = self.transition_stmt_(None)?;
+		Ok(ast::Tau::new_boxed(transition))
 	}
 
 

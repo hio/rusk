@@ -197,6 +197,26 @@ impl ToDocWithTitle for ast::Module
 				])),
 			},
 
+			match self.taus().is_empty() {
+				true => Doc::Empty,
+				false => Doc::Fragment(Rc::new(vec![
+					Doc::Heading(2, Rc::new(Doc::Static("Taus"))),
+					Doc::Static("\n"),
+					Doc::Fragment(Rc::new(vec![
+						Doc::Table(
+							ast::Tau::header_row(),
+							Rc::new(self.taus()
+								.iter()
+								.enumerate()
+								.map(|(i, x)| x.to_doc_rows(i + 1, self))
+								.collect::<Vec<_>>()
+								.concat()),
+						),
+					])),
+					Doc::Static("\n"),
+				])),
+			},
+
 			Doc::SepBy("\n", Rc::new(self.states()
 				.iter()
 				.map(|state| state.to_doc(self))
@@ -230,7 +250,7 @@ impl ToDocRow for ast::TypeStmt
 			// | {i} |
 			Doc::Number(i),
 			// | {name}{args} |
-			name_args_to_doc(self.name(), self.args()),
+			name_args_to_doc(Some(self.name()), self.args()),
 			// | {summary} |
 			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
 			// | {definition} |
@@ -356,7 +376,7 @@ impl ToDocRow for ast::EventItem
 			// | {i} |
 			Doc::Number(i),
 			// | {name}{args} |
-			name_args_to_doc(self.name(), self.args()),
+			name_args_to_doc(Some(self.name()), self.args()),
 			// | {summary} |
 			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
 			// | {desc} |
@@ -389,7 +409,7 @@ impl ToDocWithModule for ast::State
 				Doc::Static("state "),
 				{
 					let name = ast::DottedName::new_boxed(vec![self.name().clone()]);
-					name_args_to_doc(name.as_ref(), self.args())
+					name_args_to_doc(Some(name.as_ref()), self.args())
 				},
 				match self.summary() {
 					Some(summ) => Doc::Fragment(Rc::new(vec![
@@ -605,19 +625,27 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		// | {i} |
 		if first { Doc::Number(i) } else { Doc::Empty },
 		// | {name}{args} |
-		if first { name_args_to_doc(me.name(), me.args()) } else { Doc::Empty },
+		if first { name_args_to_doc(me.name().as_ref().map(|name|name.as_ref()), me.args()) } else { Doc::Empty },
 		// | {summary} |
 		if first {
-			module.get_event_summary(me.name())
-				.map_or(Doc::Empty, |summ|
-					Doc::Marked(Rc::new(summ.clone()))
-				)
+			match me.name() {
+				Some(name) => match module.get_event_summary(name) {
+					Some(summ) => Doc::Marked(Rc::new(summ.clone())),
+					None => Doc::Empty,
+				},
+				None => Doc::Empty,
+			}
 		}else
 		{
 			Doc::Empty
 		},
 		// | {guard_expr}/{guard_desc} |
-		guards_to_cell(me.guards()),
+		if first {
+			guards_to_cell(me.guards())
+		}else
+		{
+			Doc::Empty
+		},
 		// | {post_targets} |
 		match post {
 			Some(post) =>
@@ -723,18 +751,22 @@ fn guard_to_cell(guard: &ast::GuardExpr) -> Doc
 
 
 
-fn name_args_to_doc(name: &ast::DottedName, args: &ast::ArgList) -> Doc
+fn name_args_to_doc(name: Option<&ast::DottedName>, args: &ast::ArgList) -> Doc
 {
-	if args.args().is_empty()
+	let v = vec![
+		match name
+		{
+			Some(name) => vec![ name.to_doc(), ],
+			None => vec![],
+		},
+		args.args().iter().map(|arg| arg.to_doc()).collect::<Vec<_>>(),
+	].concat();
+	if v.is_empty()
 	{
-		name.to_doc()
+		Doc::Empty
 	}else
 	{
-		Doc::Fragment(Rc::new(vec![
-			name.to_doc(),
-			Doc::Static(" "),
-			Doc::SepBy(" ", Rc::new(args.args().iter().map(|arg| arg.to_doc()).collect::<Vec<_>>())),
-		]))
+		Doc::SepBy(" ", Rc::new(v))
 	}
 }
 
@@ -892,6 +924,24 @@ impl ToDoc for ast::Mutation
 			Doc::Static(" = "),
 			self.rhs().to_doc(),
 		]))
+	}
+}
+
+
+impl HeaderRow for ast::Tau
+{
+	fn header_row() -> Rc<Vec<Doc>>
+	{
+		ast::TransitionField::header_row()
+	}
+}
+
+
+impl ToDocRowsWithModule for ast::Tau
+{
+	fn to_doc_rows(&self, i: usize, module: &ast::Module) -> Vec<Rc<Vec<Doc>>>
+	{
+		self.transition().to_doc_rows(i, module)
 	}
 }
 

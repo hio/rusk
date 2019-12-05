@@ -55,3 +55,22 @@ state x
 	{
 	}
 }
+
+
+tau -->
+{
+}
+
+tau a b when c, d -->
+{
+	post {
+		target pp;
+		pp';
+	}@{- qq -}
+	post {
+		target state;
+		state';
+	}@{- ss -}
+}@{-
+	ttt
+-}

@@ -11,11 +11,12 @@ pub struct Module
 	vars: Box<Vec<Box<VarStmt>>>,
 	invariants: Box<Vec<Box<InvariantField>>>,
 	states: Box<Vec<Box<State>>>,
+	taus: Box<Vec<Box<Tau>>>,
 }
 
 impl Module
 {
-	pub fn new_boxed(types: Box<Vec<Box<TypeStmt>>>, events: Box<Vec<Box<EventItem>>>, vars: Box<Vec<Box<VarStmt>>>, states: Box<Vec<Box<State>>>, invariants: Box<Vec<Box<InvariantField>>>) -> Box<Module>
+	pub fn new_boxed(types: Box<Vec<Box<TypeStmt>>>, events: Box<Vec<Box<EventItem>>>, vars: Box<Vec<Box<VarStmt>>>, states: Box<Vec<Box<State>>>, invariants: Box<Vec<Box<InvariantField>>>, taus: Box<Vec<Box<Tau>>>) -> Box<Module>
 	{
 		Box::new(Module {
 			types,
@@ -23,6 +24,7 @@ impl Module
 			vars,
 			states,
 			invariants,
+			taus,
 		})
 	}
 
@@ -49,6 +51,11 @@ impl Module
 	pub fn states(&self) -> &Vec<Box<State>>
 	{
 		&self.states
+	}
+
+	pub fn taus(&self) -> &Vec<Box<Tau>>
+	{
+		&self.taus
 	}
 
 	pub fn get_event_summary(&self, name: &DottedName) -> Option<&String>
@@ -507,7 +514,7 @@ impl InvariantField
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TransitionField
 {
-	name: Box<DottedName>,
+	name: Option<Box<DottedName>>,
 	args: Box<ArgList>,
 	guards: Box<Vec<Box<GuardExpr>>>,
 	posts: Box<Vec<Box<PostCond>>>,
@@ -517,7 +524,7 @@ pub struct TransitionField
 
 impl TransitionField
 {
-	pub fn new_boxed(name: Box<DottedName>, args: Box<ArgList>, guards: Box<Vec<Box<GuardExpr>>>, posts: Box<Vec<Box<PostCond>>>, desc: Option<Box<String>>) -> Box<TransitionField>
+	pub fn new_boxed(name: Option<Box<DottedName>>, args: Box<ArgList>, guards: Box<Vec<Box<GuardExpr>>>, posts: Box<Vec<Box<PostCond>>>, desc: Option<Box<String>>) -> Box<TransitionField>
 	{
 		Box::new(TransitionField {
 			name,
@@ -528,7 +535,7 @@ impl TransitionField
 		})
 	}
 
-	pub fn name(&self) -> &DottedName
+	pub fn name(&self) -> &Option<Box<DottedName>>
 	{
 		&self.name
 	}
@@ -774,6 +781,7 @@ impl VarStmt
 	}
 }
 
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Mutation
 {
@@ -814,6 +822,30 @@ impl Mutation
 	pub fn rhs(&self) -> &Expr
 	{
 		&self.rhs
+	}
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Tau
+{
+	transition: Box<TransitionField>,
+}
+
+
+impl Tau
+{
+	pub fn new_boxed(transition: Box<TransitionField>) -> Box<Tau>
+	{
+		Box::new(Tau {
+			transition,
+		})
+	}
+
+
+	pub fn transition(&self) -> &TransitionField
+	{
+		&self.transition
 	}
 }
 
