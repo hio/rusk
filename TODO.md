@@ -6,25 +6,26 @@ title: TODO
 
 ### Near Future
 
-- TD-104: tau (arg) ... guard -\->
+- TD-105: fn definition: fn f (arg) ...: t = body;
 
 ### Misc
 
+- TD-169: phrase comment { f : T @[- .. -], } at record field, etc.
+- TD-171: @// style description. (seealso [#Rethinks](#rethinks))
 - TD-149: given keyword rather than an identifier.
-- TD-103: module description.
-- TD-105: fn definition: fn f (arg) ...: t = body;
+- TD-103: module description. @!{- ... -} or @^{- ... -}
 - TD-126: allow single paren in @(- -)
 - RF-122: drop escapes by (( and ))
 - TD-161: split up KwOper `in`.
+- TD-128: ReST formatter
 
 ### Backlog
 
-- TD-128: ReST formatter
 - RF-116: sort scanner::KeywordKind by alphabetical
 - RF-117: sort scanner::PunctuationKind by alphabetical
 - RF-118: sort scanner::OperatorKind by alphabetical
 - TD-119: @(((- -))) or @(-\-- -\--)for fewer escape.
-- TD-120: description for containing block. e.g. state{@{-...-}...}
+- TD-120: description for containing block. e.g. state{@^{-...-}...}
 - TD-124: if/then/else rather than if cond {} else {}
 - TD-125: case x|arm... rather than match x{arm...}
 - TD-127: unicode block, mathematical operators
@@ -45,29 +46,30 @@ title: TODO
 - TD-154: binary operator for CSP sequencial composition alternative of `[]`.
 - TD-165: move comm ops to lowest prec.
 - TD-166: split up doc/lib.md into each types.
+- TD-167: column position of first line in description.
+- TD-168: non functional requirements.
 
-blocked/blocks:
+## Rethinks
 
-- TD-123: alternative operator for p [] q
+- TD-123: alternative operator for external choices (p [] q)
 - TD-109: event set without pragma.
 - TD-110: event item, @//, \
   (try) `sep ::= "," <@//>?`, \
   (rethink) `item }`
-- TD-111: field, @//
+- TD-111: record field, @//
 - TD-112: type ; @//
 - TD-113: f:T @// ,
 
-## Rethinks
-
-* `=`, `==` and `<-`
-    * comparison: 1 == 1
-    * binding: x == get\_something
-    * pattern match: Just _ == maybe
-    * binding with destruction: Just elem == list !! ix
-    * record construction: Type { field = init } \
+- TD-170: semantics of equations
+    - `=`, `==` and `<-`
+    - comparison: 1 == 1
+    - binding: x == get\_something
+    - pattern match: Just _ == maybe
+    - binding with destruction: Just elem == list !! ix
+    - record construction: Type { field = init } \
       Type { field: init }?
       Type { field := init }?
-    * record mutation: obj { field <- new\_value } \
+    - record mutation: obj { field <- new\_value } \
       obj { field <-: new\_value }
       obj { field: new\_value }
       obj { field := init }?
@@ -77,6 +79,7 @@ blocked/blocks:
 ## Done
 
 - (newer)
+- TD-104: tau (arg) ... guard -\->
 - TD-114: nested anon record def.
 - RF-115: Option<Box<String>> rather than Box<Option<String>> (31)
 - TD-136: remove indentation in description.
