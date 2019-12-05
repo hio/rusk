@@ -243,7 +243,6 @@ impl ToDocRow for ast::TypeStmt
 					Rc::new(Doc::Fragment(Rc::new(vec![
 						Doc::Static(" |"),
 						Doc::Br,
-						Doc::Static("\n"),
 					]))),
 					Rc::new(
 						self.items().iter().map(|item| item.to_doc()).collect::<Vec<_>>()
@@ -715,7 +714,10 @@ fn guard_to_cell(guard: &ast::GuardExpr) -> Doc
 				Doc::BlockQuote(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
 			])),
 		None =>
-			Doc::Code(Rc::new(guard.expr().to_doc())),
+			Doc::Fragment(Rc::new(vec![
+				Doc::Code(Rc::new(guard.expr().to_doc())),
+				Doc::Static("\n"),
+			])),
 	}
 }
 
