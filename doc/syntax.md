@@ -10,7 +10,7 @@ block-comment ::= "/*" <free-text> "*/" ;;
 
 
 module ::= (event-stmt | type-stmt | var-stmt | const-stmt
-            | invariant-stmt | state-stmt)* ;;
+            | invariant-stmt | state-stmt | tau-stmt)* ;;
 
 event-stmt ::= "event" (event-item <sep-end-by ",">)* ";" ;;
 event-item ::= event-name at-alias arg-list? ;;
@@ -57,11 +57,19 @@ arg ::= <identifier>
       | "(" expr ":" type-expr ")"
     ;;
 
+tau-stmt ::=
+  "tau" arg-list?
+  ("when" (cond-expr at-phrase-description <sep-end-by ",">)+)?
+  "-->" "{"
+    post-cond+
+  "}" ;;
+
 at-alias ::= "@" "(" <free-text> ")"
            | "@" "(-" <free-text> "-)"
          ;;
 at-phrase-description ::= "@" "[-" <free-text> "-]" ;;
 at-stmt-description ::= "@" "{-" <free-text> "-}" ;;
+at-line-description ::= "@" "//" <free-text except '\n'> "-}" ;;
 
 
 cond-expr ::= <expr> ;;
@@ -105,7 +113,9 @@ let-expr ::=
         * \<let expr\>
         * \<if-expr\>
         * record mutation with inside syntax: "{" expr "|" \<identifier\> "<-" expr "," ... "}"
-        * quantifier expr: ("exists" | "exists1" | "forall") (expr \<sep-end-by ","\>)+ "|" cond-expr
+        * quantifier expr: ("exists" | "exists1" | "forall") ((gen-expr | filter-expr) \<sep-end-by ","\>)+ "|" cond-expr
+            * gen-expr ::= expr ;; // elem <- collection, elem : Type
+            * filter-expr ::= cond-expr ;;
     * any keyword
     * given keyword
     * state keyword
@@ -154,7 +164,8 @@ let-expr ::=
     * send a messsage, no assoc: chan "!" expr
     * chan ::= expr ;;
 17. process communication (lowest precedence)
-    * CSP prefix operation, left assoc: event "->" process
+    * CSP prefix operation, right assoc: event "->" process
+    * CSP sequential composition, left assoc: process ";>>" process
     * event ::= expr ;;
     * process ::= expr ;;
 
