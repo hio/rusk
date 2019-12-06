@@ -6,18 +6,24 @@ title: TODO
 
 ### Near Future
 
-- TD-105: fn definition: fn f (arg) ...: t = body;
+- TD-169: phrase comment { f : T @[- .. -], } at record field, etc.
 
 ### Misc
 
-- TD-169: phrase comment { f : T @[- .. -], } at record field, etc.
 - TD-171: @// style description. (seealso [#Rethinks](#rethinks))
 - TD-149: given keyword rather than an identifier.
-- TD-103: module description. @!{- ... -} or @^{- ... -}
+- TD-103: module description. @!{- ... -}
 - TD-126: allow single paren in @(- -)
 - RF-122: drop escapes by (( and ))
 - TD-161: split up KwOper `in`.
 - TD-128: ReST formatter
+- TD-168: non functional requirements.
+- TD-176: auto detection of set, map, record def.
+- TD-140: tuple expression:  `"(" ")" | "(" expr "," (expr <sep-end-by ",">)* ")"`
+- TD-166: split up doc/lib.md into each types.
+- TD-177: op fn expr, e.g. `(+)`
+- TD-178: named op expr, e.g. `` `func` ``
+- TD-179: fn stmt for op: `fn (+) a b`
 
 ### Backlog
 
@@ -32,7 +38,6 @@ title: TODO
 - TD-135: Doc encode option/never twice same decoration.
 - TD-137: parse markdown in description.
 - TD-138: set serde attributes for json formatter.
-- TD-140: tuple expression:  `"(" ")" | "(" expr "," (expr <sep-end-by ",">)* ")"`
 - TD-141: ternary expr `expr ?? expr !! expr`
 - TD-142: semantic check.
 - TD-143: type check.
@@ -44,10 +49,8 @@ title: TODO
 - TD-152: rename summary to alias.
 - RF-153: simplify rs code { x:x, } into just { x, }
 - TD-154: binary operator for CSP sequencial composition alternative of `[]`.
-- TD-165: move comm ops to lowest prec.
-- TD-166: split up doc/lib.md into each types.
 - TD-167: column position of first line in description.
-- TD-168: non functional requirements.
+- TD-175: fn stmt in state local.
 
 ## Rethinks
 
@@ -60,7 +63,7 @@ title: TODO
 - TD-112: type ; @//
 - TD-113: f:T @// ,
 
-- TD-170: semantics of equations
+- TD-170: conditions and semantics of equations
     - `=`, `==` and `<-`
     - comparison: 1 == 1
     - binding: x == get\_something
@@ -79,6 +82,11 @@ title: TODO
 ## Done
 
 - (newer)
+- TD-165: move comm ops to lowest prec.
+- TD-174: concat multiple post conditions vertically in output doc.
+- TD-173: support {} for empty set/map.
+- TD-105: fn definition: fn f (arg:type) ...: t = body;
+- TD-172: fn declaration: fn f (arg:type) ...: t;
 - TD-104: tau (arg) ... guard -\->
 - TD-114: nested anon record def.
 - RF-115: Option<Box<String>> rather than Box<Option<String>> (31)
