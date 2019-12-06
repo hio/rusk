@@ -91,6 +91,11 @@ let-expr ::=
   (<identifier> "=" <expr exclude "in" binary operator> <sep-end-by ",">)+
   "in" expr ;;
 
+fn-type-expr ::= "fn" arg-list? ":" type-expr ;;
+fn-expr      ::= "fn" arg-list? ":" type-expr "->" expr ;;
+fn-decl      ::= "fn" <identifier> arg-list? ":" type-expr ";" ;;
+fn-stmt      ::= "fn" <identifier> arg-list? ":" type-expr "=" expr ";" ;;
+
 <dq-string> ::= "\"" <free-text> "\"" ;;
 <dotted-name> ::= (<identifier> <sep-by ".">)+ ;;
 ```
@@ -112,6 +117,7 @@ let-expr ::=
         * \<case-expr\>
         * \<let expr\>
         * \<if-expr\>
+        * (TODO) \<fn-expr\>
         * record mutation with inside syntax: "{" expr "|" \<identifier\> "<-" expr "," ... "}"
         * quantifier expr: ("exists" | "exists1" | "forall") ((gen-expr | filter-expr) \<sep-end-by ","\>)+ "|" cond-expr
             * gen-expr ::= expr ;; // elem <- collection, elem : Type
@@ -133,16 +139,19 @@ let-expr ::=
 7. user defined binary operator
     * left assoc: expr \<user-op\> expr
     * left assoc: expr \`\<identifier\>\` expr
-8. mutiplication
+8. function composition
+    * right-then-left, right assoc: expr "<<" expr, ``g << f`` == ``g(f(x))``
+    * left-then-right, left assoc: expr ">>" expr, ``f >> g`` == ``g(f(x))``
+9. mutiplication
     * left assoc: expr "\*" expr
     * left assoc: expr "/" expr
-9. addition
+10. addition
     * left assoc: expr "+" expr
     * left assoc: expr "-" expr
-10. concatenation, exclusion.
+11. concatenation, exclusion.
     * left assoc: expr "++" expr
     * left assoc: expr "--" expr
-11. comparison
+12. comparison
     * no assoc: expr "==" expr
     * no assoc: expr "/=" expr
     * no assoc: expr "<" expr
@@ -150,24 +159,33 @@ let-expr ::=
     * no assoc: expr ">" expr
     * no assoc: expr ">=" expr
     * no assoc: expr "in" expr
-12. material conditional
+13. material conditional
     * left assoc: cond-expr "=>" cond-expr
-13. logical conjunction
+14. logical conjunction
     * left assoc: cond-expr "&&" cond-expr
-14. logical disjunction
+15. logical disjunction
     * left assoc: cond-expr "||" cond-expr
-15. pipe
+16. pipe
     * left assoc: expr "|>" expr
     * f a |> g b == g b (f a)
-16. channel communication
+17. channel communication
     * receive a messsage, no assoc: chan "?" expr
     * send a messsage, no assoc: chan "!" expr
     * chan ::= expr ;;
-17. process communication (lowest precedence)
-    * CSP prefix operation, right assoc: event "->" process
-    * CSP sequential composition, left assoc: process ";>>" process
+18. CSP prefix operation
+    * right assoc: event "->" process
     * event ::= expr ;;
     * process ::= expr ;;
+19. bind
+    * (experimental) CSP sequential composition, right assoc: process ";>>" process
+    * process ::= expr ;;
+    * (experimental) right assoc: m ";>>" m, ``(m a ;>> m b): m b``
+    * (experimental) right assoc: m ";>>=" f, ``(m a ;>>= (fn (_:a): m b)): m b``
+    * m ::= expr ;;
+    * f ::= expr ;;
+20. low application (lowest precedence)
+    * right assoc: expr "$" expr
+
 
 
 ## Literals
@@ -188,6 +206,9 @@ let-expr ::=
 
 * map literal
 	* "__map" "{" (expr "|->" expr \<sep-end-by ","\>)\* "}"
+
+* tuple
+	* (TODO) "(" ")" | "(" expr "," (expr \<sep-end-by ","\>)\* ")"
 
 
 ## Name Resolution
