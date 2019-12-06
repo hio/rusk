@@ -10,7 +10,7 @@ block-comment ::= "/*" <free-text> "*/" ;;
 
 
 module ::= (event-stmt | type-stmt | var-stmt | const-stmt
-            | invariant-stmt | state-stmt | tau-stmt)* ;;
+            | invariant-stmt | state-stmt)* ;;
 
 event-stmt ::= "event" (event-item <sep-end-by ",">)* ";" ;;
 event-item ::= event-name at-alias arg-list? ;;
@@ -23,7 +23,7 @@ var-stmt ::= not-documented-yet ;;
 state-stmt ::= "state" state-name at-alias arg-list?
                 "{" state-element* "}" ;;
 state-name ::= <dotted-name> ;;
-state-element ::= var-stmt | invariant-stmt | transition-stmt ;;
+state-element ::= var-stmt | invariant-stmt | transition-stmt | tau-stmt ;;
 
 var-stmt ::= "var" <identifier> ":" type-expr "=" expr ";" ;;
 const-stmt ::= "const" <identifier> ":" type-expr "=" expr ";" ;;
