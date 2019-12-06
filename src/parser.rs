@@ -539,11 +539,11 @@ fn test_state_transition()
 #[test]
 fn test_state_tau()
 {
-	test_parse("tau --> { }");
-	test_parse("tau --> { post{ } }");
-	test_parse("tau --> { }@{- -}");
-	test_parse("tau (a:T) --> { }");
-	test_parse("tau (a:T) (b:T) --> { }");
+	test_parse("state s{ tau --> { } }");
+	test_parse("state s{ tau --> { post{ } } }");
+	test_parse("state s{ tau --> { }@{- -} }");
+	test_parse("state s{ tau (a:T) --> { } }");
+	test_parse("state s{ tau (a:T) (b:T) --> { } }");
 }
 
 
@@ -965,7 +965,6 @@ impl Parser
 		let mut vars = Box::new(Vec::new());
 		let mut states = Box::new(Vec::new());
 		let mut invariants = Box::new(Vec::new());
-		let mut taus = Box::new(Vec::new());
 
 		loop
 		{
@@ -1054,26 +1053,10 @@ impl Parser
 				},
 			};
 
-			self.restore(&save);
-			let err = match self.tau_stmt()
-			{
-				Ok(tau) => {
-					taus.push(tau);
-					continue;
-				},
-				Err(err2) => {
-					if self.pos != save.pos
-					{
-						return Err(err2)
-					}
-					err.merge(err2)
-				},
-			};
-
 			return Err(err);
 		}
 
-		let module = ast::Module::new_boxed(types, events, vars, states, invariants, taus);
+		let module = ast::Module::new_boxed(types, events, vars, states, invariants);
 		Ok(module)
 	}
 
@@ -1348,6 +1331,22 @@ impl Parser
 					if self.pos != save.pos
 					{
 						return Err(err2);
+					}
+					err.merge(err2)
+				},
+			};
+
+			self.restore(&save);
+			let err = match self.tau_stmt()
+			{
+				Ok(tau) => {
+					fields.push(Box::new(ast::Field::Tau(*tau)));
+					continue;
+				},
+				Err(err2) => {
+					if self.pos != save.pos
+					{
+						return Err(err2)
 					}
 					err.merge(err2)
 				},

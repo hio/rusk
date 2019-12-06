@@ -197,26 +197,6 @@ impl ToDocWithTitle for ast::Module
 				])),
 			},
 
-			match self.taus().is_empty() {
-				true => Doc::Empty,
-				false => Doc::Fragment(Rc::new(vec![
-					Doc::Heading(2, Rc::new(Doc::Static("Taus"))),
-					Doc::Static("\n"),
-					Doc::Fragment(Rc::new(vec![
-						Doc::Table(
-							ast::Tau::header_row(),
-							Rc::new(self.taus()
-								.iter()
-								.enumerate()
-								.map(|(i, x)| x.to_doc_rows(i + 1, self))
-								.collect::<Vec<_>>()
-								.concat()),
-						),
-					])),
-					Doc::Static("\n"),
-				])),
-			},
-
 			Doc::SepBy("\n", Rc::new(self.states()
 				.iter()
 				.map(|state| state.to_doc(self))
@@ -481,6 +461,28 @@ impl ToDocWithModule for ast::State
 							ast::TransitionField::header_row(),
 							Rc::new(
 								transitions
+									.iter()
+									.enumerate()
+									.map(|(i, x)| x.to_doc_rows(i + 1, module))
+									.collect::<Vec<_>>()
+									.concat(),
+							),
+						),
+					])),
+				"",
+			),
+
+			if_has_field_or_(
+				self.fields(),
+				|field| field.get_tau(),
+				|taus| Doc::Fragment(Rc::new(vec![
+						Doc::Static("\n"),
+						Doc::Heading(3, Rc::new(Doc::Static("Taus"))),
+						Doc::Static("\n"),
+						Doc::Table(
+							ast::Tau::header_row(),
+							Rc::new(
+								taus
 									.iter()
 									.enumerate()
 									.map(|(i, x)| x.to_doc_rows(i + 1, module))

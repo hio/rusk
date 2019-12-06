@@ -11,12 +11,11 @@ pub struct Module
 	vars: Box<Vec<Box<VarStmt>>>,
 	invariants: Box<Vec<Box<InvariantField>>>,
 	states: Box<Vec<Box<State>>>,
-	taus: Box<Vec<Box<Tau>>>,
 }
 
 impl Module
 {
-	pub fn new_boxed(types: Box<Vec<Box<TypeStmt>>>, events: Box<Vec<Box<EventItem>>>, vars: Box<Vec<Box<VarStmt>>>, states: Box<Vec<Box<State>>>, invariants: Box<Vec<Box<InvariantField>>>, taus: Box<Vec<Box<Tau>>>) -> Box<Module>
+	pub fn new_boxed(types: Box<Vec<Box<TypeStmt>>>, events: Box<Vec<Box<EventItem>>>, vars: Box<Vec<Box<VarStmt>>>, states: Box<Vec<Box<State>>>, invariants: Box<Vec<Box<InvariantField>>>) -> Box<Module>
 	{
 		Box::new(Module {
 			types,
@@ -24,7 +23,6 @@ impl Module
 			vars,
 			states,
 			invariants,
-			taus,
 		})
 	}
 
@@ -51,11 +49,6 @@ impl Module
 	pub fn states(&self) -> &Vec<Box<State>>
 	{
 		&self.states
-	}
-
-	pub fn taus(&self) -> &Vec<Box<Tau>>
-	{
-		&self.taus
 	}
 
 	pub fn get_event_summary(&self, name: &DottedName) -> Option<&String>
@@ -386,6 +379,7 @@ pub enum Field
 	Var(VarField),
 	Invariant(InvariantField),
 	Transition(TransitionField),
+	Tau(Tau),
 }
 
 
@@ -411,6 +405,12 @@ impl Field
 	pub fn get_transition(&self) -> Option<&TransitionField>
 	{
 		if let Field::Transition(x) = self { Some(x) }
+		else { None }
+	}
+
+	pub fn get_tau(&self) -> Option<&Tau>
+	{
+		if let Field::Tau(x) = self { Some(x) }
 		else { None }
 	}
 }
