@@ -9,18 +9,20 @@ pub struct Module
 	types: Box<Vec<Box<TypeStmt>>>,
 	events: Box<Vec<Box<EventItem>>>,
 	vars: Box<Vec<Box<VarStmt>>>,
+	funcs: Box<Vec<Box<FnStmt>>>,
 	invariants: Box<Vec<Box<InvariantField>>>,
 	states: Box<Vec<Box<State>>>,
 }
 
 impl Module
 {
-	pub fn new_boxed(types: Box<Vec<Box<TypeStmt>>>, events: Box<Vec<Box<EventItem>>>, vars: Box<Vec<Box<VarStmt>>>, states: Box<Vec<Box<State>>>, invariants: Box<Vec<Box<InvariantField>>>) -> Box<Module>
+	pub fn new_boxed(types: Box<Vec<Box<TypeStmt>>>, events: Box<Vec<Box<EventItem>>>, vars: Box<Vec<Box<VarStmt>>>, funcs: Box<Vec<Box<FnStmt>>>, states: Box<Vec<Box<State>>>, invariants: Box<Vec<Box<InvariantField>>>) -> Box<Module>
 	{
 		Box::new(Module {
 			types,
 			events,
 			vars,
+			funcs,
 			states,
 			invariants,
 		})
@@ -39,6 +41,11 @@ impl Module
 	pub fn vars(&self) -> &Vec<Box<VarStmt>>
 	{
 		&self.vars
+	}
+
+	pub fn functions(&self) -> &Vec<Box<FnStmt>>
+	{
+		&self.funcs
 	}
 
 	pub fn invariants(&self) -> &Vec<Box<InvariantField>>
@@ -319,6 +326,65 @@ impl DottedName
 	{
 		&self.names
 	}
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FnStmt
+{
+	name: Box<String>,
+	summ: Option<Box<String>>,
+	args: Box<ArgList>,
+	typ: Option<Box<Expr>>,
+	body: Option<Box<Expr>>,
+	desc: Option<Box<String>>,
+}
+
+
+impl FnStmt
+{
+	pub fn new_boxed(name: Box<String>, summ: Option<Box<String>>, args: Box<ArgList>, typ: Option<Box<Expr>>, body: Option<Box<Expr>>, desc: Option<Box<String>>) -> Box<FnStmt>
+	{
+		Box::new(FnStmt {
+			name,
+			summ,
+			args,
+			typ,
+			body,
+			desc,
+		})
+	}
+
+	pub fn name(&self) -> &String
+	{
+		&self.name
+	}
+
+	pub fn summary(&self) -> &Option<Box<String>>
+	{
+		&self.summ
+	}
+
+	pub fn args(&self) -> &ArgList
+	{
+		&self.args
+	}
+
+	pub fn typ(&self) -> &Option<Box<Expr>>
+	{
+		&self.typ
+	}
+
+	pub fn body(&self) -> &Option<Box<Expr>>
+	{
+		&self.body
+	}
+
+	pub fn description(&self) -> &Option<Box<String>>
+	{
+		&self.desc
+	}
+
 }
 
 

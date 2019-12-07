@@ -178,6 +178,25 @@ impl ToDocWithTitle for ast::Module
 				},
 			},
 
+			match self.functions().is_empty() {
+				true => Doc::Empty,
+				false => Doc::Fragment(Rc::new(vec![
+					Doc::Heading(2, Rc::new(Doc::Static("Module Functions"))),
+					Doc::Static("\n"),
+					Doc::Fragment(Rc::new(vec![
+						Doc::Table(
+							ast::FnStmt::header_row(),
+							Rc::new(self.functions()
+								.iter()
+								.enumerate()
+								.map(|(i, x)| x.to_doc_row(i + 1))
+								.collect::<Vec<_>>()),
+						),
+					])),
+					Doc::Static("\n"),
+				])),
+			},
+
 			match self.invariants().is_empty() {
 				true => Doc::Empty,
 				false => Doc::Fragment(Rc::new(vec![
@@ -375,6 +394,51 @@ impl ToDoc for ast::DottedName
 				Doc::Plain(Rc::new(name.clone()))
 			).collect::<Vec<_>>()
 		))
+	}
+}
+
+
+impl HeaderRow for ast::FnStmt
+{
+	fn header_row() -> Rc<Vec<Doc>>
+	{
+		Rc::new(vec![
+			Doc::Static("#"),
+			Doc::Static("Name"),
+			Doc::Static("Summary"),
+			Doc::Static("Type"),
+			Doc::Static("Body"),
+			Doc::Static("Description"),
+		])
+	}
+}
+
+
+impl ToDocRow for ast::FnStmt
+{
+	fn to_doc_row(&self, i: usize) -> Rc<Vec<Doc>>
+	{
+		Rc::new(vec![
+			// | {i} |
+			Doc::Number(i),
+			// | {name} |
+			name_args_to_doc(Some(&ast::DottedName::new_boxed(vec![self.name().clone()])), self.args()),
+			// | {summary} |
+			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
+			// | {type} |
+			self.typ().as_ref().map_or(Doc::Empty, |typ| typ.to_doc()),
+			// | {body} |
+			self.body().as_ref().map_or(Doc::Empty, |body| body.to_doc()),
+			// | {desc} |
+			self.description()
+				.as_ref()
+				.map_or(
+					Doc::Empty,
+					|desc| Doc::Cell(Rc::new(
+						Doc::Marked(Rc::new(desc.as_ref().clone()))
+					))
+				),
+		])
 	}
 }
 

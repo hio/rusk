@@ -43,6 +43,15 @@ impl Error
 		Box::new(Error::NotFound(set1))
 	}
 
+	fn r_merge(self: Box<Error>, e1: Option<Box<Error>>) -> Box<Error>
+	{
+		match e1
+		{
+			Some(e1) => e1.merge(self),
+			None => self,
+		}
+	}
+
 	pub fn report(self: Box<Error>, path: &String, source_map: Box<SourceMap>)
 	{
 		let Error::NotFound(set) = *self;
@@ -438,6 +447,15 @@ fn test_proc()
 
 
 #[test]
+fn test_fn_stmt()
+{
+	test_parse("fn x;");
+	test_parse("fn x (a:b):r = c;");
+	test_parse("fn x@(xx) (a:b) = c @{- xxx -};");
+}
+
+
+#[test]
 fn test_invariant()
 {
 	test_parse("invariant {}");
@@ -668,6 +686,18 @@ impl Parser
 				self.pos -= 1;
 				false
 			},
+		}
+	}
+
+
+	fn keyword_fn(&mut self) -> Result<(), Box<Error>>
+	{
+		if self.keyword(scanner::KeywordKind::Fn)
+		{
+			Ok(())
+		}else
+		{
+			return Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::Fn(self.pos)))));
 		}
 	}
 
@@ -963,6 +993,7 @@ impl Parser
 		let mut types = Box::new(Vec::new());
 		let mut events = Box::new(Vec::new());
 		let mut vars = Box::new(Vec::new());
+		let mut funcs = Box::new(Vec::new());
 		let mut states = Box::new(Vec::new());
 		let mut invariants = Box::new(Vec::new());
 
@@ -1022,6 +1053,22 @@ impl Parser
 			};
 
 			self.restore(&save);
+			let err = match self.fn_stmt()
+			{
+				Ok(func) => {
+					funcs.push(func);
+					continue;
+				},
+				Err(err2) => {
+					if self.pos != save.pos
+					{
+						return Err(err2)
+					}
+					err.merge(err2)
+				},
+			};
+
+			self.restore(&save);
 			let err = match self.invariant_stmt()
 			{
 				Ok(stmt) => {
@@ -1056,7 +1103,7 @@ impl Parser
 			return Err(err);
 		}
 
-		let module = ast::Module::new_boxed(types, events, vars, states, invariants);
+		let module = ast::Module::new_boxed(types, events, vars, funcs, states, invariants);
 		Ok(module)
 	}
 
@@ -1761,6 +1808,39 @@ impl Parser
 			summary,
 			desc,
 		))
+	}
+
+
+	fn fn_stmt(&mut self) -> Result<Box<ast::FnStmt>, Box<Error>>
+	{
+		self.keyword_fn()?;
+
+		let name = self.name_string()?;
+		let summ = self.at_summary_opt();
+
+		let (args, err) = self.arg_list_opt()?;
+
+		let (typ, err) = match self.punct_colon()
+		{
+			Ok(()) => (Some(self.expr_(&ExprOpts::no_prefix_op())?), None),
+			Err(err2) => (None, Some(err.merge(err2))),
+		};
+
+		let (expr, err) = match self.punct_equal()
+		{
+			Ok(()) => (Some(self.expr()?), None),
+			Err(err2) => (None, Some(err2.r_merge(err))),
+		};
+
+		let desc = self.at_long_description_opt();
+
+		match self.punct_semi_colon()
+		{
+			Ok(()) => (),
+			Err(err2) => return Err(err2.r_merge(err)),
+		}
+
+		Ok(ast::FnStmt::new_boxed(Box::new(name), summ, args, typ, expr, desc))
 	}
 
 

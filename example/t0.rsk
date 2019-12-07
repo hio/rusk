@@ -11,6 +11,10 @@ type x = a | b;
 type x = a | b |;
 type x = a | b | c {} | {};
 
+fn x;
+fn x (a:b):r = c;
+fn x@(xx) (a:b) = c @{- xxx -};
+
 state s
 {
 	var a:b = 2;
