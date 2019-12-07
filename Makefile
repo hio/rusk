@@ -15,6 +15,7 @@ build clean run test update:
 release-bin:
 	$(CARGO) build --release
 	$(CARGO) build --release --target x86_64-unknown-linux-musl
+#	$(CARGO) build --release --target x86_64-pc-windows-gnu
 
 .PHONY: doc
 doc: cargo-doc doc-html
@@ -84,7 +85,7 @@ _build/%.md: _build/%.log
 	sed -e '1,/markdown/ d' < $< > $@
 
 _build/%.html: _build/%.md _build/style.css
-	$(PANDOC) --toc --standalone --css ./style.css $< -o $@
+	$(PANDOC) --toc --standalone --mathjax=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js --css ./style.css $< -o $@
 
 _build/style.css: example/style.css
 	cp -a $< $@
