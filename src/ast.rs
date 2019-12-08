@@ -952,6 +952,7 @@ pub enum Expr
 	Nil,
 	List(Box<ListExpr>),
 	ListComprehension(Box<ListComprehensionExpr>),
+	EmptyBrace,
 	Set(Box<SetExpr>),
 	Map(Box<MapExpr>),
 	Paren(Box<Expr>),
@@ -1028,6 +1029,11 @@ impl Expr
 	pub fn new_list_comprehension_boxed(out_expr: Box<Expr>, elems: Box<Vec<Box<Expr>>>) -> Box<Expr>
 	{
 		Box::new(Expr::ListComprehension(ListComprehensionExpr::new_boxed(out_expr, elems)))
+	}
+
+	pub fn new_empty_brace_boxed() -> Box<Expr>
+	{
+		Box::new(Expr::EmptyBrace)
 	}
 
 	pub fn new_set_boxed(elems: Box<Vec<Box<Expr>>>) -> Box<Expr>
@@ -1161,6 +1167,7 @@ impl Expr
 		Expr::Nil => Prec::Term,
 		Expr::List(_) => Prec::Term,
 		Expr::ListComprehension(_) => Prec::Term,
+		Expr::EmptyBrace => Prec::Term,
 		Expr::Set(_) => Prec::Term,
 		Expr::Map(_) => Prec::Term,
 		Expr::Paren(_) => Prec::Paren,

@@ -366,6 +366,9 @@ fn test_expr()
 	test_parse("const r = [ f a | a in s & a < threshold ];"); // deprecated.
 	test_parse("const r = [ f a | a : T & a < threshold ];"); // deprecated.
 
+	// empty set or empty map.
+	test_parse("const x = {};");
+
 	test_parse("const x = __set {};");
 	test_parse("const x = __set { 1 };");
 	test_parse("const x = __set { 1, };");
@@ -567,7 +570,7 @@ fn test_state_tau()
 
 struct ExprOpts
 {
-	record_construction: bool,
+	brace_left: bool,
 	record_def: bool,
 	application: bool,
 	in_op: bool,
@@ -582,7 +585,7 @@ impl ExprOpts
 	fn standard() -> ExprOpts
 	{
 		ExprOpts {
-			record_construction: true, // a { ... }.
+			brace_left: true, // {...}, a { ... }.
 			record_def: false,
 			application: true, // a b.
 			in_op: true, // a in b.
@@ -596,7 +599,7 @@ impl ExprOpts
 	fn followed_by_block() -> ExprOpts
 	{
 		let mut opts = Self::standard();
-		opts.record_construction = false;
+		opts.brace_left = false;
 		opts
 	}
 
@@ -2360,7 +2363,7 @@ impl Parser
 	{
 		let expr = self.prop_expr(opts)?;
 
-		if !opts.record_construction
+		if !opts.brace_left
 		{
 			return Ok(expr);
 		}
@@ -2616,16 +2619,21 @@ impl Parser
 			},
 		};
 
-		self.restore(&save);
-		let err = match self.brace_expr(opts) {
-			result@Ok(_) => return result,
-			Err(err2) => {
-				if self.pos != save.pos
-				{
-					return Err(err2)
+		let err = match opts.brace_left {
+			true => {
+				self.restore(&save);
+				match self.brace_expr(opts) {
+					result@Ok(_) => return result,
+					Err(err2) => {
+						if self.pos != save.pos
+						{
+							return Err(err2)
+						}
+						err.merge(err2)
+					},
 				}
-				err.merge(err2)
 			},
+			false => err
 		};
 
 		self.restore(&save);
@@ -3193,10 +3201,7 @@ impl Parser
 			return Err(Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::Case(self.pos)))));
 		}
 
-		let expr = {
-			let opts = ExprOpts::followed_by_block();
-			self.expr_(&opts)?
-		};
+		let expr = self.expr_(&ExprOpts::followed_by_block())?;
 		let mut elems = Vec::new();
 
 		self.punct_brace_left()?;
@@ -3330,7 +3335,7 @@ impl Parser
 
 	fn mutation(&mut self, opts: &ExprOpts) -> Result<Box<ast::Mutation>, Box<Error>>
 	{
-		let lhs = self.expr()?;
+		let lhs = self.expr_(&ExprOpts::no_type())?;
 
 		let ltype = match self.punct_colon() {
 			Ok(()) => Ok(self.expr()?),
@@ -3405,7 +3410,16 @@ impl Parser
 	fn record_mutation(&mut self) -> Result<Box<ast::Expr>, Box<Error>>
 	{
 		self.punct_brace_left()?;
-		let expr = self.expr()?;
+
+		let err = match self.punct_brace_right() {
+			Ok(()) => return Ok(ast::Expr::new_empty_brace_boxed()),
+			Err(err) => err,
+		};
+
+		let expr = match self.expr() {
+			Ok(expr) => expr,
+			Err(err2) => return Err(err.merge(err2)),
+		};
 		self.punct_vertical_bar()?;
 
 		let mut elems = Vec::new();

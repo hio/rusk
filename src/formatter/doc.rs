@@ -1031,6 +1031,7 @@ impl ToDoc for ast::Expr
 		ast::Expr::Nil => Doc::Static("[]"),
 		ast::Expr::List(x) => x.to_doc(),
 		ast::Expr::ListComprehension(x) => x.to_doc(),
+		ast::Expr::EmptyBrace => Doc::Static("{}"),
 		ast::Expr::Set(x) => x.to_doc(),
 		ast::Expr::Map(x) => x.to_doc(),
 		ast::Expr::Paren(x) => Doc::Fragment(Rc::new(vec![
