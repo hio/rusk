@@ -662,10 +662,7 @@ impl HeaderRow for ast::TransitionField
 			Doc::Static("Event\n(Name)"),
 			Doc::Static("Event\n(Summary)"),
 			Doc::Static("Guard"),
-			Doc::Static("Post cond\n(Target)"),
-			Doc::Static("Post cond\n(Expr)"),
-			Doc::Static("Transition"),
-			Doc::Static("Post cond\n(Description)"),
+			Doc::Static("Post cond"),
 			Doc::Static("Description"),
 		])
 	}
@@ -713,56 +710,69 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 			Doc::Empty
 		},
 		// | {post_targets} |
-		match post {
-			Some(post) =>
-				Doc::SepBy(
-					", ",
-					Rc::new(post.targets().iter()
-						.map(|target| Doc::Plain(Rc::new(target.clone())))
-						.collect::<Vec<_>>()),
-				),
-			None => Doc::Empty,
-		},
 		// | {post_expr} |
-		match post {
-			Some(post) =>
-				Doc::SepByDoc(
-					Rc::new(Doc::Br),
-					Rc::new(post.exprs()
-						.iter()
-						.filter(|x| !x.is_transition())
-						.map(|x| Doc::Code(Rc::new(Doc::Fragment(Rc::new(vec![
-							x.to_doc(),
-							Doc::Static(";"),
-						])))))
-						.collect::<Vec<_>>()),
-				),
-			None => Doc::Empty,
-		},
 		// | {transition} |
-		match post {
-			Some(post) =>
-				Doc::SepByDoc(
-					Rc::new(Doc::Br),
-					Rc::new(post.exprs()
-						.iter()
-						.filter(|x| x.is_transition())
-						.map(|x| Doc::Code(Rc::new(Doc::Fragment(Rc::new(vec![
-							x.to_doc(),
-							Doc::Static(";"),
-						])))))
-						.collect::<Vec<_>>()),
-				),
-			None => Doc::Empty,
-		},
 		// | {post_desc} |
 		match post {
 			Some(post) =>
-				post.description().as_ref().map_or(
-					Doc::Empty,
-					|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
-				),
-			None => Doc::Empty,
+				Doc::SepByDoc(Rc::new(Doc::Hr), Rc::new(vec![
+					// targets/exprs/transitions.
+					if post.items().is_empty()
+					{
+						vec![]
+					}else
+					{
+						vec![
+							if post.targets().is_empty()
+							{
+								vec![]
+							}else
+							{
+								vec![
+									Doc::Fragment(Rc::new(vec![
+										Doc::Static("target "),
+										Doc::SepBy(
+											", ",
+											Rc::new(post.targets().iter()
+												.map(|target| Doc::Plain(Rc::new(target.clone())))
+												.collect::<Vec<_>>()),
+										),
+										Doc::Static(";\n"),
+									])),
+								]
+							},
+
+							post.items()
+								.iter()
+								.map(|item| {
+									let code = Doc::Fragment(Rc::new(vec![
+										Doc::Code(Rc::new(item.expr().to_doc())),
+										Doc::Static("\n"),
+									]));
+									match item.description() {
+										Some(desc) =>
+											Doc::Fragment(Rc::new(vec![
+												code,
+												Doc::Static("\n"),
+												Doc::BlockQuote(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
+											])),
+										None =>
+											code,
+									}
+								})
+								.collect::<Vec<_>>(),
+						].concat()
+					},
+					// description.
+					vec![
+						post.description().as_ref().map_or(
+							Doc::Empty,
+							|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
+						),
+					],
+				].concat())),
+			None =>
+				Doc::Empty,
 		},
 		// | {desc} |
 		if first {
@@ -926,26 +936,26 @@ impl ToDocRow for ast::VarStmt
 	}
 }
 
-impl ToDoc for ast::PostCondItem
+impl ToDoc for ast::PostCondExpr
 {
 	fn to_doc(&self) -> Doc
 	{
 		match self
 		{
-			ast::PostCondItem::Mutation(m) => m.to_doc(),
-			ast::PostCondItem::Expr(expr) => expr.to_doc(),
+			ast::PostCondExpr::Mutation(m) => m.to_doc(),
+			ast::PostCondExpr::Expr(expr) => expr.to_doc(),
 		}
 	}
 }
 
-impl IsTransition for ast::PostCondItem
+impl IsTransition for ast::PostCondExpr
 {
 	fn is_transition(&self) -> bool
 	{
 		match self
 		{
-			ast::PostCondItem::Mutation(m) => m.is_transition(),
-			ast::PostCondItem::Expr(expr) => {
+			ast::PostCondExpr::Mutation(m) => m.is_transition(),
+			ast::PostCondExpr::Expr(expr) => {
 				match expr.as_ref()
 				{
 					ast::Expr::Cmp(cmp) => {

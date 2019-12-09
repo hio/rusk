@@ -715,18 +715,18 @@ impl Arg
 pub struct PostCond
 {
 	targets: Box<Vec<String>>,
-	exprs: Box<Vec<Box<PostCondItem>>>,
+	items: Box<Vec<Box<PostCondItem>>>,
 	desc: Option<Box<String>>,
 }
 
 
 impl PostCond
 {
-	pub fn new_boxed(targets: Box<Vec<String>>, exprs: Box<Vec<Box<PostCondItem>>>, desc: Option<Box<String>>) -> Box<PostCond>
+	pub fn new_boxed(targets: Box<Vec<String>>, items: Box<Vec<Box<PostCondItem>>>, desc: Option<Box<String>>) -> Box<PostCond>
 	{
 		Box::new(PostCond {
 			targets,
-			exprs,
+			items,
 			desc,
 		})
 	}
@@ -736,9 +736,9 @@ impl PostCond
 		&self.targets
 	}
 
-	pub fn exprs(&self) -> &Vec<Box<PostCondItem>>
+	pub fn items(&self) -> &Vec<Box<PostCondItem>>
 	{
-		&self.exprs
+		&self.items
 	}
 
 	pub fn description(&self) -> &Option<Box<String>>
@@ -749,24 +749,54 @@ impl PostCond
 
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum PostCondItem
+pub struct PostCondItem
+{
+	expr: Box<PostCondExpr>,
+	desc: Option<Box<String>>,
+}
+
+
+impl PostCondItem
+{
+	pub fn new_boxed(expr: Box<PostCondExpr>, desc: Option<Box<String>>) -> Box<PostCondItem>
+	{
+		Box::new(PostCondItem {
+			expr,
+			desc,
+		})
+	}
+
+	pub fn expr(&self) -> &PostCondExpr
+	{
+		&self.expr
+	}
+
+	pub fn description(&self) -> &Option<Box<String>>
+	{
+		&self.desc
+	}
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum PostCondExpr
 {
 	Mutation(Box<Mutation>),
 	Expr(Box<Expr>),
 }
 
 
-impl PostCondItem
+impl PostCondExpr
 {
-	pub fn new_mutation_boxed(mutation: Box<Mutation>) -> Box<PostCondItem>
+	pub fn new_mutation_boxed(mutation: Box<Mutation>) -> Box<PostCondExpr>
 	{
-		Box::new(PostCondItem::Mutation(mutation))
+		Box::new(PostCondExpr::Mutation(mutation))
 	}
 
 
-	pub fn new_expr_boxed(expr: Box<Expr>) -> Box<PostCondItem>
+	pub fn new_expr_boxed(expr: Box<Expr>) -> Box<PostCondExpr>
 	{
-		Box::new(PostCondItem::Expr(expr))
+		Box::new(PostCondExpr::Expr(expr))
 	}
 }
 

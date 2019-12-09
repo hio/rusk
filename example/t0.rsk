@@ -68,7 +68,8 @@ state x
 		post {
 			target pp;
 			pp';
-		}@{- qq -}
+			qq' @{- qqq -};
+		}@{- desc 1 -}
 		post {
 			target state;
 			state';

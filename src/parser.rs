@@ -1561,7 +1561,7 @@ impl Parser
 		}
 
 		let mut targets = Box::new(Vec::new());
-		let mut exprs = Box::new(Vec::new());
+		let mut items = Box::new(Vec::new());
 		self.punct_brace_left()?;
 		loop
 		{
@@ -1636,18 +1636,19 @@ impl Parser
 				Err(err2) => return Err(err.merge(err2)),
 			};
 
-			let err = match self.punct_equal()
-			{
+			let (expr, err) = match self.punct_equal() {
 				Ok(()) => {
 					let e2 = self.expr()?;
-					exprs.push(ast::PostCondItem::new_mutation_boxed(ast::Mutation::new_boxed(e1, None, Box::new("=".into()), e2)));
-					None
+					let expr = ast::PostCondExpr::new_mutation_boxed(ast::Mutation::new_boxed(e1, None, Box::new("=".into()), e2));
+					(expr, None)
 				},
 				Err(err) => {
-					exprs.push(ast::PostCondItem::new_expr_boxed(e1));
-					Some(err)
+					let expr = ast::PostCondExpr::new_expr_boxed(e1);
+					(expr, Some(err))
 				}
 			};
+			let desc = self.at_long_description_opt();
+			items.push(ast::PostCondItem::new_boxed(expr, desc));
 
 			match self.punct_semi_colon()
 			{
@@ -1666,7 +1667,7 @@ impl Parser
 		}
 
 		let desc = self.at_long_description_opt();
-		Ok(ast::PostCond::new_boxed(targets, exprs, desc))
+		Ok(ast::PostCond::new_boxed(targets, items, desc))
 	}
 
 
