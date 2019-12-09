@@ -11,6 +11,10 @@ type x = a | b;
 type x = a | b |;
 type x = a | b | c {} | {};
 
+const x = a $ b;
+const x = a ;>> b;
+const x = a ;>>= b;
+
 fn x;
 fn x (a:b):r = c;
 fn x@(xx) (a:b) = c @{- xxx -};

@@ -292,6 +292,9 @@ impl Operator
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum OperatorKind
 {
+	LowAppli,
+	Bind,
+	BindWith,
 	LogiOr,
 	LogiAnd,
 	CmpEq,
@@ -316,6 +319,9 @@ impl OperatorKind
 	{
 		match self
 		{
+		OperatorKind::LowAppli => "$",
+		OperatorKind::Bind => ";>>",
+		OperatorKind::BindWith => ";>>=",
 		OperatorKind::LogiOr => "||",
 		OperatorKind::LogiAnd => "&&",
 		OperatorKind::CmpEq => "==",
@@ -661,7 +667,7 @@ impl Tokenizer
 				'8' => self.number(8)?,
 				'9' => self.number(9)?,
 				':' => self.operator(ch)?,
-				';' => self.punctuation(PunctuationKind::SemiColon, self.ix - 1),
+				';' => self.semi_colon(),
 				'<' => self.operator(ch)?,
 				'=' => self.operator(ch)?,
 				'>' => self.operator(ch)?,
@@ -837,6 +843,32 @@ impl Tokenizer
 		}
 	}
 
+
+	fn semi_colon(&mut self) -> ()
+	{
+		let offset = self.ix - 1;
+		if self.input.get(self.ix) == Some(&'>') && self.input.get(self.ix + 1) == Some(&'>')
+		{
+			if self.input.get(self.ix + 2) == Some(&'=')
+			{
+				self.ix += 3;
+				self.tokens.push(
+					Box::new(Token::Operator(Box::new(Operator { kind: OperatorKind::BindWith, offset }))),
+				);
+			}else
+			{
+				self.ix += 2;
+				self.tokens.push(
+					Box::new(Token::Operator(Box::new(Operator { kind: OperatorKind::Bind, offset }))),
+				);
+			}
+		}else
+		{
+			self.punctuation(PunctuationKind::SemiColon, offset)
+		}
+	}
+
+
 	fn operator(&mut self, ch0: char) -> Result<(), Error>
 	{
 		let offset = self.ix - 1;
@@ -902,6 +934,11 @@ impl Tokenizer
 				);
 			},
 
+			"$" => {
+				self.tokens.push(
+					Box::new(Token::Operator(Box::new(Operator { kind: OperatorKind::LowAppli, offset }))),
+				);
+			},
 			"||" => {
 				self.tokens.push(
 					Box::new(Token::Operator(Box::new(Operator { kind: OperatorKind::LogiOr, offset }))),

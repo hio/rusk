@@ -402,6 +402,9 @@ fn test_expr()
 	test_parse("const x = fn x (y:Y) (z 1: Z 2) :t -> e;");
 	test_parse("const x : fn x (y:Y) (z 1: Z 2) :t = fn x (y:Y) (z 1: Z 2) :t -> e;");
 
+	test_parse("const x = a $ b;");
+	test_parse("const x = a ;>> b;");
+	test_parse("const x = a ;>>= b;");
 	// tuple?
 	// bind?, pipe?.
 }
@@ -1859,13 +1862,90 @@ impl Parser
 	fn expr(&mut self) -> Result<Box<ast::Expr>, Box<Error>>
 	{
 		let opts = ExprOpts::standard();
-		self.or_expr(&opts)
+		self.low_appli_expr(&opts)
 	}
 
 
 	fn expr_(&mut self, opts: &ExprOpts) -> Result<Box<ast::Expr>, Box<Error>>
 	{
-		self.or_expr(&opts)
+		self.low_appli_expr(&opts)
+	}
+
+
+	fn low_appli_expr(&mut self, opts: &ExprOpts) -> Result<Box<ast::Expr>, Box<Error>>
+	{
+		let lhs = self.bind_expr(opts)?;
+
+		let save = &self.save();
+		let op = match self.next_token() {
+			Some(&scanner::Token::Operator(ref op)) => {
+				match op.kind()
+				{
+					scanner::OperatorKind::LowAppli =>
+						op.clone(),
+					_ => {
+						self.restore(save);
+						return Ok(lhs)
+					},
+				}
+			},
+
+			_ => {
+				self.restore(save);
+				return Ok(lhs)
+			}
+		};
+
+		// right assoc.
+		match self.low_appli_expr(opts)
+		{
+			Ok(rhs) => {
+				Ok(ast::Expr::new_binop_boxed(lhs, op.to_code().into(), rhs))
+			},
+			Err(_) => {
+				self.restore(save);
+				Ok(lhs)
+			}
+		}
+	}
+
+
+	fn bind_expr(&mut self, opts: &ExprOpts) -> Result<Box<ast::Expr>, Box<Error>>
+	{
+		let lhs = self.or_expr(opts)?;
+
+		let save = &self.save();
+		let op = match self.next_token() {
+			Some(&scanner::Token::Operator(ref op)) => {
+				match op.kind()
+				{
+					scanner::OperatorKind::Bind |
+					scanner::OperatorKind::BindWith =>
+						op.clone(),
+					_ => {
+						self.restore(save);
+						return Ok(lhs)
+					},
+				}
+			},
+
+			_ => {
+				self.restore(save);
+				return Ok(lhs)
+			}
+		};
+
+		// right assoc.
+		match self.bind_expr(opts)
+		{
+			Ok(rhs) => {
+				Ok(ast::Expr::new_binop_boxed(lhs, op.to_code().into(), rhs))
+			},
+			Err(_) => {
+				self.restore(save);
+				Ok(lhs)
+			}
+		}
 	}
 
 
