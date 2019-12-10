@@ -67,12 +67,20 @@ state x
 	{
 	}
 
-	tau a b when c, d -->
+	tau a b when c @[- cc -], d @[-
+		dd
+		dd
+		dd
+		-]-->
 	{
 		post {
 			target pp;
-			pp';
-			qq' @{- qqq -};
+			pp' @{- pp -};
+			qq' @{-
+				qq
+				qq
+				qq
+			-};
 		}@{- desc 1 -}
 		post {
 			target state;

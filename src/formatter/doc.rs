@@ -269,9 +269,62 @@ impl ToDocRow for ast::TypeStmt
 				)))
 			},
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.as_ref().clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| to_marked_block(desc)))),
 		])
 	}
+}
+
+
+fn to_marked_block(text: &String) -> Doc
+{
+	let mut lines = text
+		.replace("\t", "    ")
+		.trim_end()
+		.split('\n')
+		.map(|s| s.into())
+		.collect::<Vec<String>>();
+
+	// drop leading empty lines.
+	while !lines.is_empty()
+	{
+		if lines[0].chars().any(|c| !c.is_whitespace())
+		{
+			break;
+		}
+		lines.remove(0);
+	}
+
+	// dorp longest common indent.
+	while !lines[0].is_empty()
+	{
+		// break if first char at first line is not a whitespace.
+		let c0 = match lines[0].chars().next() {
+			Some(c0) => c0,
+			None => break,
+		};
+		if !c0.is_whitespace()
+		{
+			break;
+		}
+
+		// break if not common.
+		if lines.iter().any(|line| line.chars().next() != Some(c0))
+		{
+			break;
+		}
+
+		for line in lines.iter_mut()
+		{
+			line.remove(0);
+		}
+	}
+
+	for line in lines.iter_mut()
+	{
+		*line += "\n";
+	}
+
+	Doc::Marked(Rc::new(lines.concat()))
 }
 
 
@@ -379,7 +432,7 @@ impl ToDocRow for ast::EventItem
 			// | {summary} |
 			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.as_ref().clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().as_ref().map_or(Doc::Empty, |desc| to_marked_block(desc)))),
 		])
 	}
 }
@@ -434,9 +487,7 @@ impl ToDocRow for ast::FnStmt
 				.as_ref()
 				.map_or(
 					Doc::Empty,
-					|desc| Doc::Cell(Rc::new(
-						Doc::Marked(Rc::new(desc.as_ref().clone()))
-					))
+					|desc| Doc::Cell(Rc::new(to_marked_block(desc)))
 				),
 		])
 	}
@@ -469,7 +520,7 @@ impl ToDocWithModule for ast::State
 				Some(desc) =>
 					Doc::Fragment(Rc::new(vec![
 						Doc::Static("\n"),
-						Doc::Marked(Rc::new((*desc).as_ref().clone())),
+						to_marked_block(desc),
 					])),
 				None => Doc::Empty,
 			},
@@ -594,7 +645,7 @@ impl ToDocRow for ast::VarField
 			// | {summary} |
 			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| to_marked_block(desc)))),
 		])
 	}
 }
@@ -645,9 +696,7 @@ impl ToDocRow for ast::InvariantField
 				.as_ref()
 				.map_or(
 					Doc::Empty,
-					|desc| Doc::Cell(Rc::new(
-						Doc::Marked(Rc::new(desc.as_ref().clone()))
-					))
+					|desc| Doc::Cell(Rc::new(to_marked_block(desc))),
 				),
 		])
 	}
@@ -754,7 +803,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 											Doc::Fragment(Rc::new(vec![
 												code,
 												Doc::Static("\n"),
-												Doc::BlockQuote(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
+												Doc::BlockQuote(Rc::new(to_marked_block(desc))),
 											])),
 										None =>
 											code,
@@ -767,7 +816,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 					vec![
 						post.description().as_ref().map_or(
 							Doc::Empty,
-							|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
+							|desc| Doc::Cell(Rc::new(to_marked_block(desc))),
 						),
 					],
 				].concat())),
@@ -778,7 +827,7 @@ fn transition_row(me: &ast::TransitionField, i: usize, module: &ast::Module, j: 
 		if first {
 			me.description().as_ref().map_or(
 				Doc::Empty,
-				|desc| Doc::Cell(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
+				|desc| Doc::Cell(Rc::new(to_marked_block(desc))),
 			)
 		}else
 		{
@@ -815,7 +864,7 @@ fn guard_to_cell(guard: &ast::GuardExpr) -> Doc
 				Doc::Code(Rc::new(guard.expr().to_doc())),
 				Doc::Static("\n"),
 				Doc::Static("\n"),
-				Doc::BlockQuote(Rc::new(Doc::Marked(Rc::new(desc.as_ref().clone())))),
+				Doc::BlockQuote(Rc::new(to_marked_block(desc))),
 			])),
 		None =>
 			Doc::Fragment(Rc::new(vec![
@@ -931,7 +980,7 @@ impl ToDocRow for ast::VarStmt
 			// | {summary} |
 			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Rc::new(summ.as_ref().clone()))),
 			// | {desc} |
-			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| Doc::Marked(Rc::new(desc.as_ref().clone()))))),
+			Doc::Cell(Rc::new(self.description().as_ref().map_or(Doc::Empty, |desc| to_marked_block(desc)))),
 		])
 	}
 }

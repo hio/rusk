@@ -166,15 +166,6 @@ impl RenderingCell
 		doc.encode(&mut s, opts).unwrap();
 
 		let mut lines = s.trim_end().split('\n').map(|s| s.into()).collect::<Vec<String>>();
-		// drop leading empty lines.
-		while !lines.is_empty()
-		{
-			if lines[0].chars().any(|c| !c.is_whitespace())
-			{
-				break;
-			}
-			lines.remove(0);
-		}
 
 		match lines.len()
 		{
