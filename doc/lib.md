@@ -88,6 +88,8 @@ get the n-th element.
 
 ### list.contains (a:A): bool
 
+### list.enumerate: List (Int, A)
+
 ### list.head: Maybe A
 
 ### list.is\_empty: Bool
@@ -100,11 +102,19 @@ get the n-th element.
 
 ## type Set A
 
-### (set !! (a:A)): Maybe A 
-
 ### set.card: Int
 
 cardinarity of the set.
+
+### set.contains (a:A): bool
+
+### set.is\_empty: Bool
+
+### set.map (f:(fn (a:A): B)): Set B
+
+duplicated elements cause undefined behavior.
+
+### set.to\_list: List A
 
 ## type Map K V
 
@@ -113,6 +123,8 @@ cardinarity of the set.
 ### map.card: Int
 
 cardinarity of the map.
+
+### map.entries: Set (K, V)
 
 ### map.keys: Set K
 
