@@ -2,6 +2,12 @@
 title: ChangeLog
 ---
 
+## Release 0.1.16 (2019-12-10)
+
+* formatter
+
+	* update description formatting.
+
 ## Release 0.1.15 (2019-12-09)
 
 * parser
