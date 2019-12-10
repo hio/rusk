@@ -79,7 +79,8 @@ _build/%.rsk: example/%.rsk | _build/doc
 	cp -a $< $@
 
 _build/%.log: _build/%.rsk $(RUSK_BIN)
-	$(RUSK) --debug $< 2>&1 | tee $@
+	$(RUSK) --debug $< > $@.tmp 2>&1 || { ret=$$?; cat $@.tmp; exit $$ret; }
+	mv $@.tmp $@
 
 _build/%.md: _build/%.log
 	sed -e '1,/markdown/ d' < $< > $@
