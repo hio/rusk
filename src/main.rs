@@ -37,8 +37,8 @@ enum Formatter
 {
 	Markdown,
 	Rest,
-	Json,
-	JsonPretty,
+	AstJson,
+	AstJsonPretty,
 	DocJson,
 	DocJsonPretty,
 	//Html,
@@ -91,7 +91,7 @@ fn run(opts: &Opts, input: String) -> std::io::Result<()>
 			if opts.debug
 			{
 				println!("OK: {:?}", module);
-				if opts.formatter != Formatter::Json
+				if opts.formatter != Formatter::AstJson
 				{
 					println!("--[json]----\n{}", module.to_json_text()?);
 				}
@@ -112,17 +112,17 @@ fn run(opts: &Opts, input: String) -> std::io::Result<()>
 					}
 					println!("{}", module.as_ref().to_doc(opts.title.as_ref().unwrap(), &opts.text).to_rest_text());
 				},
-				Formatter::Json => {
+				Formatter::AstJson => {
 					if opts.debug
 					{
-						println!("--[json]----");
+						println!("--[ast-json]----");
 					}
 					println!("{}", module.to_json_text()?);
 				},
-				Formatter::JsonPretty => {
+				Formatter::AstJsonPretty => {
 					if opts.debug
 					{
-						println!("--[json-pretty]----");
+						println!("--[ast-json-pretty]----");
 					}
 					println!("{}", module.to_json_text_pretty()?);
 				},
@@ -165,15 +165,15 @@ fn read_file(path: String) -> std::io::Result<String>
 
 fn usage() -> std::io::Result<()>
 {
-	println!("Usage:  rusk [Options] {{file | -e code}}");
+	println!("Usage:  rusk [Options] {{file | -e code}} > output.md");
 	println!("");
 	println!("Options:");
 	println!("  -V, --version");
 	println!("  -h, --help");
-	println!("  --markdown       generate markdown document. (default)");
-	println!("  --json           generate json text.");
-	println!("  --json-pretty    generate pretty json text.");
-	println!("  --title {{title}} set document title.");
+	println!("  --markdown         generate markdown document. (default)");
+	println!("  --ast-json         generate json text of ast.");
+	println!("  --ast-json-pretty  generate pretty json text of ast.");
+	println!("  --title {{title}}    set document title.");
 	Ok(())
 }
 
@@ -227,13 +227,15 @@ fn main() -> std::io::Result<()>
 			args.next();
 			arg = args.peek();
 		},
-		Some("--json") => {
-			opts.formatter = Formatter::Json;
+		Some("--json") | // compat.
+		Some("--ast-json") => {
+			opts.formatter = Formatter::AstJson;
 			args.next();
 			arg = args.peek();
 		},
-		Some("--json-pretty") => {
-			opts.formatter = Formatter::JsonPretty;
+		Some("--json-pretty") | // compat.
+		Some("--ast-json-pretty") => {
+			opts.formatter = Formatter::AstJsonPretty;
 			args.next();
 			arg = args.peek();
 		},
