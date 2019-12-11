@@ -294,6 +294,11 @@ fn to_marked_block(text: &String) -> Doc
 		lines.remove(0);
 	}
 
+	if lines.is_empty()
+	{
+		return Doc::Marked(Box::new(String::new()));
+	}
+
 	// drop longest common indent.
 	while !lines[0].is_empty()
 	{

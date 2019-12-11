@@ -90,3 +90,5 @@ state x
 		ttt
 	-}
 }
+
+const x@() = a@{--}; // empty desc.
