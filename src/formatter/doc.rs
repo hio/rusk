@@ -294,7 +294,7 @@ fn to_marked_block(text: &String) -> Doc
 		lines.remove(0);
 	}
 
-	// dorp longest common indent.
+	// drop longest common indent.
 	while !lines[0].is_empty()
 	{
 		// break if first char at first line is not a whitespace.
