@@ -193,7 +193,7 @@ fn main() -> std::io::Result<()>
 	let mut arg = args.peek();
 	if arg == Some(&"-V".into()) || arg == Some(&"--version".into())
 	{
-		println!("rusk version 0.1.16");
+		println!("rusk version 0.1.17");
 		return Ok(());
 	}
 	if arg == Some(&"-h".into()) || arg == Some(&"--help".into()) || arg == None
