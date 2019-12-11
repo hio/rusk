@@ -1,4 +1,5 @@
 use crate::ast;
+use crate::message::Message;
 use serde::{Serialize, Deserialize};
 
 
@@ -36,17 +37,17 @@ trait ToDoc
 
 trait ToDocRow
 {
-	fn to_doc_row(&self, i: usize) -> Box<Vec<Doc>>;
+	fn to_doc_row(&self, text: &Message, i: usize) -> Box<Vec<Doc>>;
 }
 
 pub trait ToDocWithTitle
 {
-	fn to_doc(&self, title: &String) -> Doc;
+	fn to_doc(&self, title: &String, text: &Message) -> Doc;
 }
 
 pub trait ToDocWithModule
 {
-	fn to_doc(&self, _module: &ast::Module) -> Doc;
+	fn to_doc(&self, text: &Message, module: &ast::Module) -> Doc;
 }
 
 trait ToDocRowsWithModule
@@ -61,7 +62,7 @@ trait ToDocIfHasOr
 
 trait HeaderRow
 {
-	fn header_row() -> Box<Vec<Doc>>;
+	fn header_row(text: &Message) -> Box<Vec<Doc>>;
 }
 
 
@@ -116,7 +117,7 @@ fn if_has_field_or_<U, Filter, Map>(vec1: &Vec<Box<ast::Field>>, filter: Filter,
 
 impl ToDocWithTitle for ast::Module
 {
-	fn to_doc(&self, title: &String) -> Doc
+	fn to_doc(&self, title: &String, text: &Message) -> Doc
 	{
 		Doc::Fragment(Box::new(vec![
 			Doc::Title(Box::new(title.clone())),
@@ -126,14 +127,14 @@ impl ToDocWithTitle for ast::Module
 				self.types(),
 				"",
 				|items| Doc::Fragment(Box::new(vec![
-						Doc::Heading(2, Box::new(Doc::Static("Types"))),
+						Doc::Heading(2, Box::new(Doc::Plain(text.h_types()))),
 						Doc::Static("\n"),
 						Doc::Table(
-							ast::TypeStmt::header_row(),
+							ast::TypeStmt::header_row(text),
 							Box::new(items
 								.iter()
 								.enumerate()
-								.map(|(i, x)| x.to_doc_row(i + 1))
+								.map(|(i, x)| x.to_doc_row(text, i + 1))
 								.collect::<Vec<_>>()),
 						),
 						Doc::Static("\n"),
@@ -144,14 +145,14 @@ impl ToDocWithTitle for ast::Module
 				self.events(),
 				"",
 				|items| Doc::Fragment(Box::new(vec![
-						Doc::Heading(2, Box::new(Doc::Static("Events"))),
+						Doc::Heading(2, Box::new(Doc::Plain(text.h_events()))),
 						Doc::Static("\n"),
 						Doc::Table(
-							ast::Event::header_row(),
+							ast::Event::header_row(text),
 							Box::new(items
 								.iter()
 								.enumerate()
-								.map(|(i, x)| x.to_doc_row(i + 1))
+								.map(|(i, x)| x.to_doc_row(text, i + 1))
 								.collect::<Vec<_>>()),
 						),
 						Doc::Static("\n"),
@@ -162,14 +163,14 @@ impl ToDocWithTitle for ast::Module
 				true => Doc::Empty,
 				false => {
 					Doc::Fragment(Box::new(vec![
-						Doc::Heading(2, Box::new(Doc::Static("Module Variables"))),
+						Doc::Heading(2, Box::new(Doc::Plain(text.h_module_variables()))),
 						Doc::Static("\n"),
 						Doc::Table(
-							ast::VarStmt::header_row(),
+							ast::VarStmt::header_row(text),
 							Box::new(self.vars()
 								.iter()
 								.enumerate()
-								.map(|(i, x)| x.to_doc_row(i + 1))
+								.map(|(i, x)| x.to_doc_row(text, i + 1))
 								.collect::<Vec<_>>()),
 						),
 						Doc::Static("\n"),
@@ -180,15 +181,15 @@ impl ToDocWithTitle for ast::Module
 			match self.functions().is_empty() {
 				true => Doc::Empty,
 				false => Doc::Fragment(Box::new(vec![
-					Doc::Heading(2, Box::new(Doc::Static("Module Functions"))),
+					Doc::Heading(2, Box::new(Doc::Plain(text.h_module_functions()))),
 					Doc::Static("\n"),
 					Doc::Fragment(Box::new(vec![
 						Doc::Table(
-							ast::FnStmt::header_row(),
+							ast::FnStmt::header_row(text),
 							Box::new(self.functions()
 								.iter()
 								.enumerate()
-								.map(|(i, x)| x.to_doc_row(i + 1))
+								.map(|(i, x)| x.to_doc_row(text, i + 1))
 								.collect::<Vec<_>>()),
 						),
 					])),
@@ -199,15 +200,15 @@ impl ToDocWithTitle for ast::Module
 			match self.invariants().is_empty() {
 				true => Doc::Empty,
 				false => Doc::Fragment(Box::new(vec![
-					Doc::Heading(2, Box::new(Doc::Static("Module Invariants"))),
+					Doc::Heading(2, Box::new(Doc::Plain(text.h_module_invariants()))),
 					Doc::Static("\n"),
 					Doc::Fragment(Box::new(vec![
 						Doc::Table(
-							ast::InvariantField::header_row(),
+							ast::InvariantField::header_row(text),
 							Box::new(self.invariants()
 								.iter()
 								.enumerate()
-								.map(|(i, x)| x.to_doc_row(i + 1))
+								.map(|(i, x)| x.to_doc_row(text, i + 1))
 								.collect::<Vec<_>>()),
 						),
 					])),
@@ -217,7 +218,7 @@ impl ToDocWithTitle for ast::Module
 
 			Doc::SepBy("\n", Box::new(self.states()
 				.iter()
-				.map(|state| state.to_doc(self))
+				.map(|state| state.to_doc(text, self))
 				.collect::<Vec<_>>()
 			)),
 		]))
@@ -227,14 +228,14 @@ impl ToDocWithTitle for ast::Module
 
 impl HeaderRow for ast::TypeStmt
 {
-	fn header_row() -> Box<Vec<Doc>>
+	fn header_row(text: &Message) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			Doc::Static("#"),
-			Doc::Static("Name"),
-			Doc::Static("Summary"),
-			Doc::Static("Definition"),
-			Doc::Static("Description"),
+			Doc::Plain(text.th_name()),
+			Doc::Plain(text.th_alias()),
+			Doc::Plain(text.th_definision()),
+			Doc::Plain(text.th_description()),
 		])
 	}
 }
@@ -242,7 +243,7 @@ impl HeaderRow for ast::TypeStmt
 
 impl ToDocRow for ast::TypeStmt
 {
-	fn to_doc_row(&self, i: usize) -> Box<Vec<Doc>>
+	fn to_doc_row(&self, _text: &Message, i: usize) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			// | {i} |
@@ -407,7 +408,7 @@ fn to_description_doc(desc: &Box<String>) -> Doc
 
 impl HeaderRow for ast::Event
 {
-	fn header_row() -> Box<Vec<Doc>>
+	fn header_row(_text: &Message) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			Doc::Static("#"),
@@ -421,7 +422,7 @@ impl HeaderRow for ast::Event
 
 impl ToDocRow for ast::EventItem
 {
-	fn to_doc_row(&self, i: usize) -> Box<Vec<Doc>>
+	fn to_doc_row(&self, _text: &Message, i: usize) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			// | {i} |
@@ -452,7 +453,7 @@ impl ToDoc for ast::DottedName
 
 impl HeaderRow for ast::FnStmt
 {
-	fn header_row() -> Box<Vec<Doc>>
+	fn header_row(_text: &Message) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			Doc::Static("#"),
@@ -468,7 +469,7 @@ impl HeaderRow for ast::FnStmt
 
 impl ToDocRow for ast::FnStmt
 {
-	fn to_doc_row(&self, i: usize) -> Box<Vec<Doc>>
+	fn to_doc_row(&self, _text: &Message, i: usize) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			// | {i} |
@@ -495,7 +496,7 @@ impl ToDocRow for ast::FnStmt
 
 impl ToDocWithModule for ast::State
 {
-	fn to_doc(&self, module: &ast::Module) -> Doc
+	fn to_doc(&self, text: &Message, module: &ast::Module) -> Doc
 	{
 		Doc::Fragment(Box::new(vec![
 			// "## state {name_args} @ {summary}\n",
@@ -532,12 +533,12 @@ impl ToDocWithModule for ast::State
 						Doc::Heading(3, Box::new(Doc::Static("Variables"))),
 						Doc::Static("\n"),
 						Doc::Table(
-							ast::VarField::header_row(),
+							ast::VarField::header_row(text),
 							Box::new(
 								vars
 									.iter()
 									.enumerate()
-									.map(|(i, x)| x.to_doc_row(i + 1))
+									.map(|(i, x)| x.to_doc_row(text, i + 1))
 									.collect::<Vec<_>>(),
 							),
 						),
@@ -553,11 +554,11 @@ impl ToDocWithModule for ast::State
 						Doc::Heading(3, Box::new(Doc::Static("Invariants"))),
 						Doc::Static("\n"),
 						Doc::Table(
-							ast::InvariantField::header_row(),
+							ast::InvariantField::header_row(text),
 							Box::new(vec
 								.iter()
 								.enumerate()
-								.map(|(i, x)| x.to_doc_row(i + 1))
+								.map(|(i, x)| x.to_doc_row(text, i + 1))
 								.collect::<Vec<_>>()),
 						),
 					])),
@@ -572,7 +573,7 @@ impl ToDocWithModule for ast::State
 						Doc::Heading(3, Box::new(Doc::Static("Transitions"))),
 						Doc::Static("\n"),
 						Doc::Table(
-							ast::TransitionField::header_row(),
+							ast::TransitionField::header_row(text),
 							Box::new(
 								transitions
 									.iter()
@@ -594,7 +595,7 @@ impl ToDocWithModule for ast::State
 						Doc::Heading(3, Box::new(Doc::Static("Taus"))),
 						Doc::Static("\n"),
 						Doc::Table(
-							ast::Tau::header_row(),
+							ast::Tau::header_row(text),
 							Box::new(
 								taus
 									.iter()
@@ -614,7 +615,7 @@ impl ToDocWithModule for ast::State
 
 impl HeaderRow for ast::VarField
 {
-	fn header_row() -> Box<Vec<Doc>>
+	fn header_row(_text: &Message) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			Doc::Static("#"),
@@ -630,7 +631,7 @@ impl HeaderRow for ast::VarField
 
 impl ToDocRow for ast::VarField
 {
-	fn to_doc_row(&self, i: usize) -> Box<Vec<Doc>>
+	fn to_doc_row(&self, _text: &Message, i: usize) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			// | {i} |
@@ -652,7 +653,7 @@ impl ToDocRow for ast::VarField
 
 impl HeaderRow for ast::InvariantField
 {
-	fn header_row() -> Box<Vec<Doc>>
+	fn header_row(_text: &Message) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			Doc::Static("#"),
@@ -667,7 +668,7 @@ impl HeaderRow for ast::InvariantField
 
 impl ToDocRow for ast::InvariantField
 {
-	fn to_doc_row(&self, i: usize) -> Box<Vec<Doc>>
+	fn to_doc_row(&self, _text: &Message, i: usize) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			// | {i} |
@@ -703,7 +704,7 @@ impl ToDocRow for ast::InvariantField
 
 impl HeaderRow for ast::TransitionField
 {
-	fn header_row() -> Box<Vec<Doc>>
+	fn header_row(_text: &Message) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			Doc::Static("#"),
@@ -947,22 +948,22 @@ impl ToDoc for ast::VarType
 
 impl HeaderRow for ast::VarStmt
 {
-	fn header_row() -> Box<Vec<Doc>>
+	fn header_row(text: &Message) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			Doc::Static("#"),
-			Doc::Static("Name"),
-			Doc::Static("Type"),
-			Doc::Static("Init"),
-			Doc::Static("Summary"),
-			Doc::Static("Description"),
+			Doc::Plain(text.th_name()),
+			Doc::Plain(text.th_type()),
+			Doc::Plain(text.th_init()),
+			Doc::Plain(text.th_summary()),
+			Doc::Plain(text.th_description()),
 		])
 	}
 }
 
 impl ToDocRow for ast::VarStmt
 {
-	fn to_doc_row(&self, i: usize) -> Box<Vec<Doc>>
+	fn to_doc_row(&self, _text: &Message, i: usize) -> Box<Vec<Doc>>
 	{
 		Box::new(vec![
 			// | {i} |
@@ -1054,9 +1055,9 @@ impl ToDoc for ast::Mutation
 
 impl HeaderRow for ast::Tau
 {
-	fn header_row() -> Box<Vec<Doc>>
+	fn header_row(text: &Message) -> Box<Vec<Doc>>
 	{
-		ast::TransitionField::header_row()
+		ast::TransitionField::header_row(text)
 	}
 }
 

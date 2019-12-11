@@ -8,6 +8,7 @@ pub mod formatter
 	pub mod rest;
 	pub mod doc;
 }
+pub mod message;
 pub mod parser;
 pub mod scanner;
 
@@ -18,14 +19,16 @@ use crate::formatter::rest::ToRestText; // to_rest_text().
 use std::env;
 use std::fs::File;
 use std::io::Read;
+use std::rc::Rc;
 
 
 struct Opts
 {
 	path: String,
 	debug: bool,
-	title: String,
+	title: Option<String>,
 	formatter: Formatter,
+	text: Rc<message::Message>,
 }
 
 
@@ -100,14 +103,14 @@ fn run(opts: &Opts, input: String) -> std::io::Result<()>
 					{
 						println!("--[markdown]----");
 					}
-					println!("{}", module.as_ref().to_doc(&opts.title).to_markdown_text());
+					println!("{}", module.as_ref().to_doc(opts.title.as_ref().unwrap(), &opts.text).to_markdown_text());
 				},
 				Formatter::Rest => {
 					if opts.debug
 					{
 						println!("--[rest]----");
 					}
-					println!("{}", module.as_ref().to_doc(&opts.title).to_rest_text());
+					println!("{}", module.as_ref().to_doc(opts.title.as_ref().unwrap(), &opts.text).to_rest_text());
 				},
 				Formatter::Json => {
 					if opts.debug
@@ -128,14 +131,14 @@ fn run(opts: &Opts, input: String) -> std::io::Result<()>
 					{
 						println!("--[doc-json]----");
 					}
-					println!("{}", module.as_ref().to_doc(&opts.title).to_json_text()?);
+					println!("{}", module.as_ref().to_doc(opts.title.as_ref().unwrap(), &opts.text).to_json_text()?);
 				},
 				Formatter::DocJsonPretty => {
 					if opts.debug
 					{
 						println!("--[doc-json-pretty]----");
 					}
-					println!("{}", module.as_ref().to_doc(&opts.title).to_json_text_pretty()?);
+					println!("{}", module.as_ref().to_doc(opts.title.as_ref().unwrap(), &opts.text).to_json_text_pretty()?);
 				},
 			}
 		}
@@ -182,60 +185,79 @@ fn main() -> std::io::Result<()>
 	let mut opts = Opts {
 		path: "-".into(),
 		debug: false,
-		title: "Formal Specification".into(),
+		title: None,
 		formatter: Formatter::Markdown,
+		text: message::en(),
 	};
 
-	let arg = args.peek().map_or("--help".into(), |x| x.clone());
-	if arg == "-V" || arg == "--version"
+	let mut arg = args.peek();
+	if arg == Some(&"-V".into()) || arg == Some(&"--version".into())
 	{
 		println!("rusk version 0.1.16");
 		return Ok(());
 	}
-	if arg == "-h" || arg == "--help"
+	if arg == Some(&"-h".into()) || arg == Some(&"--help".into()) || arg == None
 	{
 		return usage();
 	}
 
-	if arg == "--debug"
+	if arg == Some(&"--debug".into())
 	{
 		opts.debug = true;
 		args.next();
+		arg = args.peek();
 	}
 
-	match arg.as_str()
+	if arg == Some(&"--ja".into())
 	{
-		"--markdown" => {
+		opts.text = message::ja();
+		args.next();
+		arg = args.peek();
+	}
+
+	match arg.map(|s| s.as_str())
+	{
+		Some("--markdown") => {
 			opts.formatter = Formatter::Markdown;
 			args.next();
+			arg = args.peek();
 		},
-		"--rest" => {
+		Some("--rest") => {
 			opts.formatter = Formatter::Rest;
 			args.next();
+			arg = args.peek();
 		},
-		"--json" => {
+		Some("--json") => {
 			opts.formatter = Formatter::Json;
 			args.next();
+			arg = args.peek();
 		},
-		"--json-pretty" => {
+		Some("--json-pretty") => {
 			opts.formatter = Formatter::JsonPretty;
 			args.next();
+			arg = args.peek();
 		},
-		"--doc-json" => {
+		Some("--doc-json") => {
 			opts.formatter = Formatter::DocJson;
 			args.next();
+			arg = args.peek();
 		},
-		"--doc-json-pretty" => {
+		Some("--doc-json-pretty") => {
 			opts.formatter = Formatter::DocJsonPretty;
 			args.next();
+			arg = args.peek();
 		},
 		_ => (),
 	}
 
-	if arg == "--title"
+	if arg == Some(&"--title".into())
 	{
 		args.next();
-		opts.title = args.next().expect("title");
+		opts.title = Some(args.next().expect("title"));
+	}
+	if opts.title == None
+	{
+		opts.title = Some(opts.text.h_formal_specification().into());
 	}
 
 	match args.next()
