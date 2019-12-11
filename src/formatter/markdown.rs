@@ -1,6 +1,5 @@
 //! # Markdown formatter
 use crate::formatter::doc::{ Doc, text_width };
-use std::rc::Rc;
 
 
 struct Opts
@@ -209,7 +208,7 @@ impl RenderingCell
 }
 
 
-fn write_table(f: &mut impl std::fmt::Write, opts: &Opts, header: &Rc<Vec<Doc>>, rows: &Rc<Vec<Rc<Vec<Doc>>>>) -> std::fmt::Result
+fn write_table(f: &mut impl std::fmt::Write, opts: &Opts, header: &Box<Vec<Doc>>, rows: &Box<Vec<Box<Vec<Doc>>>>) -> std::fmt::Result
 {
 	let header_cells = header.iter().map(
 		|doc_cell| RenderingCell::from_doc(doc_cell, opts)
