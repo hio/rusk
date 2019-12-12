@@ -1,4 +1,5 @@
 //! # Abstract Syntax Tree
+
 use serde::{Serialize, Deserialize};
 use std::boxed::Box;
 
@@ -332,7 +333,7 @@ impl DottedName
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FnStmt
 {
-	name: Box<String>,
+	name: Box<FnName>,
 	summ: Option<Box<String>>,
 	args: Box<ArgList>,
 	typ: Option<Box<Expr>>,
@@ -341,9 +342,18 @@ pub struct FnStmt
 }
 
 
+#[derive(Debug, Serialize, Deserialize)]
+pub enum FnName
+{
+	Name(Box<String>),
+	Operator(Box<String>),
+	PunctOper(Box<String>),
+}
+
+
 impl FnStmt
 {
-	pub fn new_boxed(name: Box<String>, summ: Option<Box<String>>, args: Box<ArgList>, typ: Option<Box<Expr>>, body: Option<Box<Expr>>, desc: Option<Box<String>>) -> Box<FnStmt>
+	pub fn new_boxed(name: Box<FnName>, summ: Option<Box<String>>, args: Box<ArgList>, typ: Option<Box<Expr>>, body: Option<Box<Expr>>, desc: Option<Box<String>>) -> Box<FnStmt>
 	{
 		Box::new(FnStmt {
 			name,
@@ -355,7 +365,7 @@ impl FnStmt
 		})
 	}
 
-	pub fn name(&self) -> &String
+	pub fn name(&self) -> &FnName
 	{
 		&self.name
 	}
@@ -384,7 +394,6 @@ impl FnStmt
 	{
 		&self.desc
 	}
-
 }
 
 

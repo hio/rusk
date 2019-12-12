@@ -480,7 +480,14 @@ impl ToDocRow for ast::FnStmt
 			// | {i} |
 			Doc::Number(i),
 			// | {name} |
-			name_args_to_doc(Some(&ast::DottedName::new_boxed(vec![self.name().clone()])), self.args()),
+			{
+				let name = match self.name() {
+					ast::FnName::Name(ref name) => name.as_ref().clone(),
+					ast::FnName::Operator(ref name) => format!("({})", name),
+					ast::FnName::PunctOper(ref name) => format!("({})", name),
+				};
+				name_args_to_doc(Some(&ast::DottedName::new_boxed(vec![name])), self.args())
+			},
 			// | {summary} |
 			self.summary().as_ref().map_or(Doc::Empty, |summ| Doc::Marked(Box::new(summ.as_ref().clone()))),
 			// | {type} |

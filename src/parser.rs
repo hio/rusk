@@ -116,6 +116,8 @@ pub enum NotFound
 	TargetSetLeft(Offset),
 	TargetSetRight(Offset),
 	Ampersand(Offset),
+	Operator(Offset),
+	PunctOper(Offset),
 
 	Any(Offset),
 	Case(Offset),
@@ -181,6 +183,8 @@ impl NotFound
 		NotFound::TargetSetLeft(offset) => *offset,
 		NotFound::TargetSetRight(offset) => *offset,
 		NotFound::Ampersand(offset) => *offset,
+		NotFound::Operator(offset) => *offset,
+		NotFound::PunctOper(offset) => *offset,
 
 		NotFound::Any(offset) => *offset,
 		NotFound::Case(offset) => *offset,
@@ -458,6 +462,9 @@ fn test_fn_stmt()
 	test_parse("fn x;");
 	test_parse("fn x (a:b):r = c;");
 	test_parse("fn x@(xx) (a:b) = c @{- xxx -};");
+
+	test_parse("fn (+) (a:b):r = c;");  // operator.
+	test_parse("fn (=>) (a:b):r = c;");  // punct-operator.
 }
 
 
@@ -1822,7 +1829,32 @@ impl Parser
 	{
 		self.keyword_fn()?;
 
-		let name = self.name_string()?;
+		let name = match self.name_string() {
+			Ok(name) => ast::FnName::Name(Box::new(name)),
+			Err(err) => match self.punct_paren_left() {
+				Ok(()) => match self.next_token() {
+					Some(&scanner::Token::Operator(ref op)) => {
+						let fn_name = ast::FnName::Operator(Box::new(op.to_code().into()));
+						self.punct_paren_right()?;
+						fn_name
+					},
+					Some(&scanner::Token::PunctOper(ref punct_op)) => {
+						let fn_name = ast::FnName::PunctOper(Box::new(punct_op.to_code().into()));
+						self.punct_paren_right()?;
+						fn_name
+					},
+					_ => {
+						self.pos -= 1;
+						let err2 = Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::Operator(self.pos))));
+						let err = err.merge(err2);
+						let err2 = Box::new(Error::NotFound(NotFound::singleton_boxed(NotFound::PunctOper(self.pos))));
+						let err = err.merge(err2);
+						return Err(err);
+					},
+				},
+				Err(err2) => return Err(err.merge(err2)),
+			},
+		};
 		let summ = self.at_summary_opt();
 
 		let (args, err) = self.arg_list_opt()?;
