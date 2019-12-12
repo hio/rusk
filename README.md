@@ -12,12 +12,12 @@ read the file and output a markdown document.
 
 ### Command Line Options
 
-* ``-V, --version``    -- show version.
-* ``-h, --help``       -- show usage.
-* ``--markdown``       -- generate markdown document. (default)
-* ``--json``           -- generate json text.
-* ``--json-pretty``    -- generate pretty json text.
-* ``--title {title}``  -- set document title.
+* ``-V, --version``     -- show version.
+* ``-h, --help``        -- show usage.
+* ``--markdown``        -- generate markdown document. (default)
+* ``--ast-json``        -- generate json text of ast.
+* ``--ast-json-pretty`` -- generate pretty json text of ast.
+* ``--title {title}``   -- set document title.
 
 
 ## Example
